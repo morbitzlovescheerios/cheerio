@@ -37,7 +37,7 @@
       padding: 1rem; gap: 1rem;
       background: rgba(255,255,255,0.8);
     }
-    [.top-bar][data-theme="dark"] {
+    .top-bar[data-theme="dark"] {
       background: rgba(0,0,0,0.5);
     }
     .container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow); padding: 2rem; margin: 2rem; max-width: 600px; width: 100%; position: relative; }
@@ -63,7 +63,7 @@
 </head>
 <body>
   <div id="purchase-overlay"></div>
-  <div class="top-bar">
+  <div class="top-bar" data-theme="light">
     <button id="theme-toggle">Dark Mode</button>
     <button id="save-btn">Save</button>
     <button id="load-btn">Load</button>
@@ -99,10 +99,7 @@
       <input type="number" id="god-click" />
       <label for="god-upgrades">Customize Upgrades (JSON Array of {bonus,cost}):</label>
       <textarea id="god-upgrades"></textarea>
-      <div class="god-controls">
-        <button id="god-apply">Apply</button>
-        <button id="god-cancel">Cancel</button>
-      </div>
+      <div class="god-controls"><button id="god-apply">Apply</button><button id="god-cancel">Cancel</button></div>
     </div>
   </div>
   <div id="timer">Time on site: 00:00:00</div>
@@ -138,96 +135,29 @@
       const startTime = Date.now();
       const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], fill: false, borderColor: 'rgb(75,192,192)', tension: 0.1 }] };
       const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
-      let upgrades = [
-        { bonus: 2, cost: 50 },{ bonus: 5, cost: 200 },{ bonus: 10, cost: 500 },
-        { bonus: 20, cost: 2000 },{ bonus: 50, cost: 5000 },{ bonus: 100, cost: 20000 },
-        { bonus: 1000, cost: 100000 },{ bonus: 2000, cost: 250000 },{ bonus: 5000, cost: 600000 },
-        { bonus: 10000, cost: 1200000 }
-      ];
+      let upgrades = [ { bonus: 2, cost: 50 },{ bonus: 5, cost: 200 },{ bonus: 10, cost: 500 },{ bonus: 20, cost: 2000 },{ bonus: 50, cost: 5000 },{ bonus: 100, cost: 20000 },{ bonus: 1000, cost: 100000 },{ bonus: 2000, cost: 250000 },{ bonus: 5000, cost: 600000 },{ bonus: 10000, cost: 1200000 } ];
 
-      function showPurchase(text) {
-        overlay.textContent = text;
-        overlay.classList.add('show');
-        setTimeout(() => overlay.classList.remove('show'), 1000);
-      }
+      function showPurchase(text) { overlay.textContent = text; overlay.classList.add('show'); setTimeout(() => overlay.classList.remove('show'), 1000); }
+      function renderShop() { shopButtonsDiv.innerHTML = ''; upgrades.forEach((u,i) => { const btn = document.createElement('button'); btn.textContent = `+${u.bonus} (${u.cost})`; btn.disabled = count < u.cost; btn.addEventListener('click', e => { e.stopPropagation(); count -= u.cost; clickValue += u.bonus; updateDisplay(); showPurchase(`+${u.bonus} Purchased!`); }); const wrapper = document.createElement('div'); wrapper.className = 'shop-item'; wrapper.appendChild(btn); shopButtonsDiv.appendChild(wrapper); }); }
+      function updateDisplay() { counterEl.textContent = count; clickValueEl.textContent = clickValue; document.querySelectorAll('.shop-item button').forEach((btn,i) => btn.disabled = count < upgrades[i].cost); }
+      function updateTimer() { const elapsed = Date.now() - startTime; const hrs = String(Math.floor(elapsed/3600000)).padStart(2,'0'); const mins = String(Math.floor((elapsed%3600000)/60000)).padStart(2,'0'); const secs = String(Math.floor((elapsed%60000)/1000)).padStart(2,'0'); timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`; }
+      function recordClick() { clickData.labels.push(clickData.labels.length+1); clickData.datasets[0].data.push(count); clickChart.update(); }
+      function saveState() { const state = { count, clickValue, data: clickData, upgrades }; const blob = new Blob([JSON.stringify(state)],{type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'clicker_save.json'; a.click(); URL.revokeObjectURL(url); }
+      function loadState(file) { const reader = new FileReader(); reader.onload = () => { const state = JSON.parse(reader.result); count = state.count; clickValue = state.clickValue; upgrades = state.upgrades; clickData.labels = state.data.labels; clickData.datasets[0].data = state.data.datasets[0].data; clickChart.update(); renderShop(); updateDisplay(); }; reader.readAsText(file); }
 
-      function renderShop() {
-        shopButtonsDiv.innerHTML = '';
-        upgrades.forEach((u,i) => {
-          const btn = document.createElement('button');
-          btn.textContent = `+${u.bonus} (${u.cost})`;
-          btn.disabled = count < u.cost;
-          btn.addEventListener('click', e => { e.stopPropagation(); count -= u.cost; clickValue += u.bonus; updateDisplay(); showPurchase(`+${u.bonus} Purchased!`); });
-          const wrapper = document.createElement('div'); wrapper.className = 'shop-item'; wrapper.appendChild(btn);
-          shopButtonsDiv.appendChild(wrapper);
-        });
-      }
-
-      function updateDisplay() {
-        counterEl.textContent = count;
-        clickValueEl.textContent = clickValue;
-        document.querySelectorAll('.shop-item button').forEach((btn,i) => btn.disabled = count < upgrades[i].cost);
-      }
-
-      function updateTimer() {
-        const elapsed = Date.now() - startTime;
-        const hrs = String(Math.floor(elapsed/3600000)).padStart(2,'0');
-        const mins = String(Math.floor((elapsed%3600000)/60000)).padStart(2,'0');
-        const secs = String(Math.floor((elapsed%60000)/1000)).padStart(2,'0');
-        timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
-      }
-
-      function recordClick() {
-        clickData.labels.push(clickData.labels.length+1);
-        clickData.datasets[0].data.push(count);
-        clickChart.update();
-      }
-
-      function saveState() {
-        const state = { count, clickValue, data: clickData, upgrades };
-        const blob = new Blob([JSON.stringify(state)],{type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'clicker_save.json'; a.click(); URL.revokeObjectURL(url);
-      }
-
-      function loadState(file) {
-        const reader = new FileReader(); reader.onload = () => {
-          const state = JSON.parse(reader.result);
-          count = state.count; clickValue = state.clickValue; upgrades = state.upgrades;
-          clickData.labels = state.data.labels; clickData.datasets[0].data = state.data.datasets[0].data;
-          clickChart.update(); renderShop(); updateDisplay();
-        };
-        reader.readAsText(file);
-      }
-
-      themeToggle.addEventListener('click', () => {
-        const cur = body.getAttribute('data-theme'); const nxt = cur==='light'?'dark':'light';
-        body.setAttribute('data-theme', nxt);
-        themeToggle.textContent = nxt==='light'?'Dark Mode':'Light Mode';
-      });
+      themeToggle.addEventListener('click', () => { const cur = body.getAttribute('data-theme'); const nxt = cur==='light'?'dark':'light'; body.setAttribute('data-theme', nxt); themeToggle.textContent = nxt==='light'?'Dark Mode':'Light Mode'; });
       saveBtn.addEventListener('click', saveState);
-      loadBtn.addEventListener('click', () => loadInput.click()); loadInput.addEventListener('change', e => loadState(e.target.files[0]));
-
+      loadBtn.addEventListener('click', () => loadInput.click());
+      loadInput.addEventListener('change', e => loadState(e.target.files[0]));
       clickBtn.addEventListener('click', () => { count += clickValue; updateDisplay(); recordClick(); });
       resetBtn.addEventListener('click', () => { count=0; clickValue=1; clickData.labels=[]; clickData.datasets[0].data=[]; clickChart.update(); updateDisplay(); });
+      godBtn.addEventListener('click', () => { godPanel.style.display = godPanel.style.display==='block'?'none':'block'; godCounter.value=count; godClick.value=clickValue; godUpgrades.value=JSON.stringify(upgrades,null,2); });
+      godCancel.addEventListener('click',()=>godPanel.style.display='none');
+      godApply.addEventListener('click',()=>{ const nc=parseInt(godCounter.value), nv=parseInt(godClick.value); try{ const nu=JSON.parse(godUpgrades.value); if(Array.isArray(nu)){ upgrades=nu; if(!isNaN(nc))count=nc; if(!isNaN(nv))clickValue=nv; renderShop(); updateDisplay(); godPanel.style.display='none'; } else alert('Upgrades must be an array'); } catch{ alert('Invalid JSON'); } });
 
-      godBtn.addEventListener('click', () => {
-        godPanel.style.display = godPanel.style.display==='block'?'none':'block';
-        godCounter.value=count; godClick.value=clickValue; godUpgrades.value=JSON.stringify(upgrades,null,2);
-      });
-      godCancel.addEventListener('click',()=>godPanel.style.display='none'); godApply.addEventListener('click',()=>{
-        const nc=parseInt(godCounter.value), nv=parseInt(godClick.value);
-        try{const nu=JSON.parse(godUpgrades.value); if(Array.isArray(nu)){upgrades=nu; if(!isNaN(nc))count=nc; if(!isNaN(nv))clickValue=nv; renderShop(); updateDisplay(); godPanel.style.display='none'; } else alert('Upgrades must be an array');} catch{alert('Invalid JSON');}
-      });
-
-      bgUploadBtn.addEventListener('click',()=>bgFileInput.click());
-      bgFileInput.addEventListener('change',e=>{
-        const file=e.target.files[0]; if(!file)return;
-        const reader=new FileReader(); reader.onload=()=>{body.style.background=`url(${reader.result}) center/cover no-repeat`;}; reader.readAsDataURL(file);
-      });
-      bgUrlBtn.addEventListener('click',()=>{
-        const url=bgUrlInput.value.trim(); if(url)body.style.background=`url(${url}) center/cover no-repeat`;
-      });
+      bgUploadBtn.addEventListener('click',()=> bgFileInput.click());
+      bgFileInput.addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload = () => { body.style.backgroundImage = `url(${reader.result})`; body.style.backgroundSize = 'cover'; body.style.backgroundPosition = 'center'; }; reader.readAsDataURL(file); });
+      bgUrlBtn.addEventListener('click',()=>{ const url=bgUrlInput.value.trim(); if(url){ body.style.backgroundImage = `url(${url})`; body.style.backgroundSize = 'cover'; body.style.backgroundPosition = 'center'; } });
 
       renderShop(); updateDisplay(); setInterval(updateTimer,1000);
     });
