@@ -26,11 +26,20 @@
       margin: 0; padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-gradient);
+      background-size: cover;
+      background-position: center;
       display: flex; flex-direction: column; align-items: center;
       min-height: 100vh; color: var(--text-color);
       position: relative;
     }
-    .top-bar { width: 100%; display: flex; justify-content: flex-end; padding: 1rem; gap: 1rem; }
+    .top-bar {
+      width: 100%; display: flex; justify-content: flex-end; align-items: center;
+      padding: 1rem; gap: 1rem;
+      background: rgba(255,255,255,0.8);
+    }
+    [.top-bar][data-theme="dark"] {
+      background: rgba(0,0,0,0.5);
+    }
     .container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow); padding: 2rem; margin: 2rem; max-width: 600px; width: 100%; position: relative; }
     #counter { font-size: 5rem; margin-bottom: 1rem; text-align: center; text-shadow: 2px 2px rgba(0,0,0,0.1); }
     .controls { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; }
@@ -43,10 +52,12 @@
     .credits { text-align: center; font-size: 0.8rem; margin-top: 1rem; color: var(--text-color); }
     #purchase-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 3rem; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; z-index: 1000; }
     #purchase-overlay.show { opacity: 1; visibility: visible; }
-    #load-input { position: absolute; left: -9999px; }
+    #load-input, #bg-file-input { position: absolute; left: -9999px; }
     button { padding: 0.75rem; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background: var(--primary); color: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.1s, background 0.2s; }
     button:hover:not(:disabled) { background: var(--secondary); transform: translateY(-2px); }
     button:disabled { background: #666; cursor: not-allowed; }
+    .bg-controls { display: flex; gap: 0.5rem; align-items: center; }
+    .bg-controls input[type="text"] { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -57,6 +68,12 @@
     <button id="save-btn">Save</button>
     <button id="load-btn">Load</button>
     <button id="god-btn">God Mode</button>
+    <div class="bg-controls">
+      <button id="bg-upload-btn">Upload BG</button>
+      <input type="text" id="bg-url-input" placeholder="Image URL..." />
+      <button id="bg-url-btn">Set BG</button>
+      <input type="file" id="bg-file-input" accept="image/*" />
+    </div>
     <input type="file" id="load-input" accept="application/json" />
   </div>
   <div class="container">
@@ -74,7 +91,6 @@
     </div>
     <canvas id="clickChart" width="400" height="200"></canvas>
     <div class="credits">Made By Morbitz And Applehat.</div>
-
     <div class="god-panel" id="god-panel">
       <h4>God Mode Settings</h4>
       <label for="god-counter">Set Counter:</label>
@@ -89,6 +105,7 @@
       </div>
     </div>
   </div>
+  <div id="timer">Time on site: 00:00:00</div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const body = document.documentElement;
@@ -111,6 +128,10 @@
       const timerEl = document.getElementById('timer');
       const shopButtonsDiv = document.getElementById('shop-buttons');
       const chartCtx = document.getElementById('clickChart').getContext('2d');
+      const bgUploadBtn = document.getElementById('bg-upload-btn');
+      const bgUrlInput = document.getElementById('bg-url-input');
+      const bgUrlBtn = document.getElementById('bg-url-btn');
+      const bgFileInput = document.getElementById('bg-file-input');
 
       let count = 0;
       let clickValue = 1;
@@ -118,15 +139,9 @@
       const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], fill: false, borderColor: 'rgb(75,192,192)', tension: 0.1 }] };
       const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
       let upgrades = [
-        { bonus: 2, cost: 50 },
-        { bonus: 5, cost: 200 },
-        { bonus: 10, cost: 500 },
-        { bonus: 20, cost: 2000 },
-        { bonus: 50, cost: 5000 },
-        { bonus: 100, cost: 20000 },
-        { bonus: 1000, cost: 100000 },
-        { bonus: 2000, cost: 250000 },
-        { bonus: 5000, cost: 600000 },
+        { bonus: 2, cost: 50 },{ bonus: 5, cost: 200 },{ bonus: 10, cost: 500 },
+        { bonus: 20, cost: 2000 },{ bonus: 50, cost: 5000 },{ bonus: 100, cost: 20000 },
+        { bonus: 1000, cost: 100000 },{ bonus: 2000, cost: 250000 },{ bonus: 5000, cost: 600000 },
         { bonus: 10000, cost: 1200000 }
       ];
 
@@ -142,16 +157,8 @@
           const btn = document.createElement('button');
           btn.textContent = `+${u.bonus} (${u.cost})`;
           btn.disabled = count < u.cost;
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            count -= u.cost;
-            clickValue += u.bonus;
-            updateDisplay();
-            showPurchase(`+${u.bonus} Purchased!`);
-          });
-          const wrapper = document.createElement('div');
-          wrapper.className = 'shop-item';
-          wrapper.appendChild(btn);
+          btn.addEventListener('click', e => { e.stopPropagation(); count -= u.cost; clickValue += u.bonus; updateDisplay(); showPurchase(`+${u.bonus} Purchased!`); });
+          const wrapper = document.createElement('div'); wrapper.className = 'shop-item'; wrapper.appendChild(btn);
           shopButtonsDiv.appendChild(wrapper);
         });
       }
@@ -180,7 +187,7 @@
         const state = { count, clickValue, data: clickData, upgrades };
         const blob = new Blob([JSON.stringify(state)],{type:'application/json'});
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download='clicker_save.json'; a.click(); URL.revokeObjectURL(url);
+        const a = document.createElement('a'); a.href = url; a.download = 'clicker_save.json'; a.click(); URL.revokeObjectURL(url);
       }
 
       function loadState(file) {
@@ -194,39 +201,35 @@
       }
 
       themeToggle.addEventListener('click', () => {
-        const cur = body.getAttribute('data-theme');
-        const nxt = cur === 'light' ? 'dark' : 'light';
+        const cur = body.getAttribute('data-theme'); const nxt = cur==='light'?'dark':'light';
         body.setAttribute('data-theme', nxt);
-        themeToggle.textContent = nxt === 'light' ? 'Dark Mode' : 'Light Mode';
+        themeToggle.textContent = nxt==='light'?'Dark Mode':'Light Mode';
       });
       saveBtn.addEventListener('click', saveState);
-      loadBtn.addEventListener('click', () => loadInput.click());
-      loadInput.addEventListener('change', e => loadState(e.target.files[0]));
+      loadBtn.addEventListener('click', () => loadInput.click()); loadInput.addEventListener('change', e => loadState(e.target.files[0]));
 
       clickBtn.addEventListener('click', () => { count += clickValue; updateDisplay(); recordClick(); });
       resetBtn.addEventListener('click', () => { count=0; clickValue=1; clickData.labels=[]; clickData.datasets[0].data=[]; clickChart.update(); updateDisplay(); });
 
       godBtn.addEventListener('click', () => {
-        godPanel.style.display = godPanel.style.display === 'block' ? 'none' : 'block';
-        godCounter.value = count; godClick.value = clickValue;
-        godUpgrades.value = JSON.stringify(upgrades, null, 2);
+        godPanel.style.display = godPanel.style.display==='block'?'none':'block';
+        godCounter.value=count; godClick.value=clickValue; godUpgrades.value=JSON.stringify(upgrades,null,2);
       });
-      godCancel.addEventListener('click', () => godPanel.style.display = 'none');
-      godApply.addEventListener('click', () => {
-        const newCount = parseInt(godCounter.value);
-        const newClickV = parseInt(godClick.value);
-        try {
-          const newUp = JSON.parse(godUpgrades.value);
-          if (Array.isArray(newUp)) {
-            upgrades = newUp;
-            if (!isNaN(newCount)) count = newCount;
-            if (!isNaN(newClickV)) clickValue = newClickV;
-            renderShop(); updateDisplay(); godPanel.style.display = 'none';
-          } else alert('Upgrades must be an array');
-        } catch { alert('Invalid JSON'); }
+      godCancel.addEventListener('click',()=>godPanel.style.display='none'); godApply.addEventListener('click',()=>{
+        const nc=parseInt(godCounter.value), nv=parseInt(godClick.value);
+        try{const nu=JSON.parse(godUpgrades.value); if(Array.isArray(nu)){upgrades=nu; if(!isNaN(nc))count=nc; if(!isNaN(nv))clickValue=nv; renderShop(); updateDisplay(); godPanel.style.display='none'; } else alert('Upgrades must be an array');} catch{alert('Invalid JSON');}
       });
 
-      renderShop(); updateDisplay(); setInterval(updateTimer, 1000);
+      bgUploadBtn.addEventListener('click',()=>bgFileInput.click());
+      bgFileInput.addEventListener('change',e=>{
+        const file=e.target.files[0]; if(!file)return;
+        const reader=new FileReader(); reader.onload=()=>{body.style.background=`url(${reader.result}) center/cover no-repeat`;}; reader.readAsDataURL(file);
+      });
+      bgUrlBtn.addEventListener('click',()=>{
+        const url=bgUrlInput.value.trim(); if(url)body.style.background=`url(${url}) center/cover no-repeat`;
+      });
+
+      renderShop(); updateDisplay(); setInterval(updateTimer,1000);
     });
   </script>
 </body>
