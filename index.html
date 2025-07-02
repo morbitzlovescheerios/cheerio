@@ -3,95 +3,136 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Clicker with Shop</title>
+  <title>Enhanced Clicker with Shop</title>
   <style>
+    :root {
+      --primary: #4a90e2;
+      --secondary: #50e3c2;
+      --bg-gradient: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+      --card-bg: #ffffff;
+      --card-shadow: rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-gradient);
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    h3 {
+      margin: 0 0 0.5rem;
+    }
+    .container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 8px 16px var(--card-shadow);
       padding: 2rem;
-      background: #f0f0f0;
-      margin: 0;
+      margin: 2rem;
+      max-width: 500px;
+      width: 100%;
     }
     #counter {
-      font-size: 4rem;
-      margin: 1rem 0;
-    }
-    .controls, .shop {
-      display: flex;
-      gap: 0.5rem;
+      font-size: 5rem;
       margin-bottom: 1rem;
+      text-align: center;
+      text-shadow: 2px 2px rgba(0,0,0,0.1);
     }
-    .shop {
-      flex-direction: column;
-      align-items: center;
-    }
-    .shop-buttons {
+    .controls, .shop-buttons {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.5rem;
     }
     button {
-      padding: 0.75rem 1.25rem;
+      flex: 1 1 120px;
+      padding: 0.75rem;
       font-size: 1rem;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      background: #007bff;
+      background: var(--primary);
       color: #fff;
-      transition: background 0.2s;
-    }
-    button:disabled {
-      background: #aaa;
-      cursor: not-allowed;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.1s ease, background 0.2s ease;
     }
     button:hover:not(:disabled) {
-      background: #0056b3;
+      background: var(--secondary);
+      transform: translateY(-2px);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .shop-item {
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      padding: 0.5rem;
+      text-align: center;
+      flex: 1 1 100px;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div id="counter">0</div>
+    <div class="controls">
+      <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
+      <button id="reset-btn">Reset</button>
+    </div>
 
-  <div id="counter">0</div>
-
-  <div class="controls">
-    <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
-    <button id="reset-btn">Reset</button>
-  </div>
-
-  <div class="shop">
-    <h3>Shop</h3>
-    <div class="shop-buttons">
-      <button id="buy-2">+2 Clicks (50)</button>
-      <button id="buy-5">+5 Clicks (200)</button>
-      <button id="buy-10">+10 Clicks (500)</button>
+    <div class="shop">
+      <h3>Shop</h3>
+      <div class="shop-buttons">
+        <div class="shop-item"><button id="buy-2">+2 (50)</button></div>
+        <div class="shop-item"><button id="buy-5">+5 (200)</button></div>
+        <div class="shop-item"><button id="buy-10">+10 (500)</button></div>
+        <div class="shop-item"><button id="buy-20">+20 (2000)</button></div>
+        <div class="shop-item"><button id="buy-50">+50 (5000)</button></div>
+        <div class="shop-item"><button id="buy-100">+100 (20000)</button></div>
+        <div class="shop-item"><button id="buy-1000">+1000 (100000)</button></div>
+      </div>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
       const counterEl    = document.getElementById('counter');
       const clickBtn     = document.getElementById('click-btn');
       const resetBtn     = document.getElementById('reset-btn');
       const clickValueEl = document.getElementById('click-value');
-      const buy2Btn      = document.getElementById('buy-2');
-      const buy5Btn      = document.getElementById('buy-5');
-      const buy10Btn     = document.getElementById('buy-10');
 
-      let count      = 0;
+      // shop buttons
+      const buy2Btn   = document.getElementById('buy-2');
+      const buy5Btn   = document.getElementById('buy-5');
+      const buy10Btn  = document.getElementById('buy-10');
+      const buy20Btn  = document.getElementById('buy-20');
+      const buy50Btn  = document.getElementById('buy-50');
+      const buy100Btn = document.getElementById('buy-100');
+      const buy1000Btn= document.getElementById('buy-1000');
+
+      let count = 0;
       let clickValue = 1;
 
       const upgrades = [
-        { btn: buy2Btn, bonus: 2, cost: 50 },
-        { btn: buy5Btn, bonus: 5, cost: 200 },
-        { btn: buy10Btn, bonus: 10, cost: 500 },
+        { btn: buy2Btn,   bonus: 2,    cost: 50 },
+        { btn: buy5Btn,   bonus: 5,    cost: 200 },
+        { btn: buy10Btn,  bonus: 10,   cost: 500 },
+        { btn: buy20Btn,  bonus: 20,   cost: 2000 },
+        { btn: buy50Btn,  bonus: 50,   cost: 5000 },
+        { btn: buy100Btn, bonus: 100,  cost: 20000 },
+        { btn: buy1000Btn,bonus: 1000, cost: 100000 },
       ];
 
       function updateDisplay() {
-        // show current count & click power
         counterEl.textContent    = count;
         clickValueEl.textContent = clickValue;
-        // toggle shop buttons
         upgrades.forEach(u => {
           u.btn.disabled = count < u.cost;
         });
@@ -118,11 +159,8 @@
         });
       });
 
-      // initialize UI
       updateDisplay();
     });
   </script>
-
 </body>
 </html>
-
