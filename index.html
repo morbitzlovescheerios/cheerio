@@ -30,66 +30,34 @@
       min-height: 100vh; color: var(--text-color);
       position: relative;
     }
-    .top-bar {
-      width: 100%; display: flex; justify-content: flex-end;
-      padding: 1rem; gap: 1rem;
-    }
-    .container {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 8px 16px var(--card-shadow);
-      padding: 2rem; margin: 2rem;
-      max-width: 600px; width: 100%;
-    }
-    #counter {
-      font-size: 5rem; margin-bottom: 1rem;
-      text-align: center;
-      text-shadow: 2px 2px rgba(0,0,0,0.1);
-    }
-    .controls, .shop-buttons, .god-controls {
-      display: flex; gap: 0.75rem;
-      flex-wrap: wrap; justify-content: center;
-      margin-bottom: 1.5rem;
-    }
-    .god-panel {
-      display: none;
-      background: var(--card-bg);
-      padding: 1rem;
-      margin-top: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px var(--card-shadow);
-    }
-    label { display: block; margin: 0.5rem 0 0.25rem; }
-    input, textarea { width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    textarea { height: 80px; font-family: monospace; }
-    button {
-      flex: 1 1 120px;
-      padding: 0.75rem; font-size: 1rem;
-      border: none; border-radius: 8px;
-      cursor: pointer;
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transition: transform 0.1s, background 0.2s;
-    }
-    button:hover:not(:disabled) { background: var(--secondary); transform: translateY(-2px); }
-    button:disabled { background: #666; cursor: not-allowed; }
+    .top-bar { width: 100%; display: flex; justify-content: flex-end; padding: 1rem; gap: 1rem; }
+    .container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow); padding: 2rem; margin: 2rem; max-width: 600px; width: 100%; position: relative; }
+    #counter { font-size: 5rem; margin-bottom: 1rem; text-align: center; text-shadow: 2px 2px rgba(0,0,0,0.1); }
+    .controls { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; }
+    .shop-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
     .shop-item { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); padding: 0.5rem; text-align: center; flex: 1 1 100px; }
+    .shop-item button { width: 100%; }
     .info-box { background: var(--card-bg); color: var(--text-color); padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 4px 8px var(--card-shadow); text-align: center; font-size: 0.95rem; }
     #clickChart { max-width: 100%; margin-top: 1rem; background: var(--card-bg); border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow); }
     #timer { position: fixed; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.6); color: #fff; padding: 0.5rem 1rem; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     .credits { text-align: center; font-size: 0.8rem; margin-top: 1rem; color: var(--text-color); }
+    #purchase-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 3rem; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; z-index: 1000; }
+    #purchase-overlay.show { opacity: 1; visibility: visible; }
     #load-input { position: absolute; left: -9999px; }
+    button { padding: 0.75rem; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background: var(--primary); color: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.1s, background 0.2s; }
+    button:hover:not(:disabled) { background: var(--secondary); transform: translateY(-2px); }
+    button:disabled { background: #666; cursor: not-allowed; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <div id="purchase-overlay"></div>
   <div class="top-bar">
     <button id="theme-toggle">Dark Mode</button>
     <button id="save-btn">Save</button>
     <button id="load-btn">Load</button>
     <button id="god-btn">God Mode</button>
-    <input type="file" id="load-input" accept="application/json">
+    <input type="file" id="load-input" accept="application/json" />
   </div>
   <div class="container">
     <div id="counter">0</div>
@@ -102,7 +70,7 @@
       <div class="shop-buttons" id="shop-buttons"></div>
     </div>
     <div class="info-box">
-      <strong>About this Clicker Game:</strong> Use the big button to earn coins. Spend coins in the shop to increase your click power and earn more per click. Track your progress on the graph below and see how long you've been playing with the timer.
+      <strong>About this Clicker Game:</strong> Use the big button to earn coins. Spend coins in the shop to increase your click power. Track your progress on the graph and see how long you've been playing with the timer.
     </div>
     <canvas id="clickChart" width="400" height="200"></canvas>
     <div class="credits">Made By Morbitz And Applehat.</div>
@@ -121,10 +89,10 @@
       </div>
     </div>
   </div>
-  <div id="timer">Time on site: 00:00:00</div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const body = document.documentElement;
+      const overlay = document.getElementById('purchase-overlay');
       const themeToggle = document.getElementById('theme-toggle');
       const saveBtn = document.getElementById('save-btn');
       const loadBtn = document.getElementById('load-btn');
@@ -149,17 +117,41 @@
       const startTime = Date.now();
       const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], fill: false, borderColor: 'rgb(75,192,192)', tension: 0.1 }] };
       const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
-      let upgrades = [ {bonus:2,cost:50},{bonus:5,cost:200},{bonus:10,cost:500},{bonus:20,cost:2000},{bonus:50,cost:5000},{bonus:100,cost:20000},{bonus:1000,cost:100000} ];
+      let upgrades = [
+        { bonus: 2, cost: 50 },
+        { bonus: 5, cost: 200 },
+        { bonus: 10, cost: 500 },
+        { bonus: 20, cost: 2000 },
+        { bonus: 50, cost: 5000 },
+        { bonus: 100, cost: 20000 },
+        { bonus: 1000, cost: 100000 },
+        { bonus: 2000, cost: 250000 },
+        { bonus: 5000, cost: 600000 },
+        { bonus: 10000, cost: 1200000 }
+      ];
+
+      function showPurchase(text) {
+        overlay.textContent = text;
+        overlay.classList.add('show');
+        setTimeout(() => overlay.classList.remove('show'), 1000);
+      }
 
       function renderShop() {
         shopButtonsDiv.innerHTML = '';
-        upgrades.forEach((u, i) => {
+        upgrades.forEach((u,i) => {
           const btn = document.createElement('button');
           btn.textContent = `+${u.bonus} (${u.cost})`;
           btn.disabled = count < u.cost;
-          btn.addEventListener('click', () => { count-=u.cost; clickValue+=u.bonus; updateDisplay(); });
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            count -= u.cost;
+            clickValue += u.bonus;
+            updateDisplay();
+            showPurchase(`+${u.bonus} Purchased!`);
+          });
           const wrapper = document.createElement('div');
-          wrapper.className = 'shop-item'; wrapper.appendChild(btn);
+          wrapper.className = 'shop-item';
+          wrapper.appendChild(btn);
           shopButtonsDiv.appendChild(wrapper);
         });
       }
@@ -167,15 +159,15 @@
       function updateDisplay() {
         counterEl.textContent = count;
         clickValueEl.textContent = clickValue;
-        document.querySelectorAll('.shop-item button').forEach((btn,i)=>btn.disabled = count < upgrades[i].cost);
+        document.querySelectorAll('.shop-item button').forEach((btn,i) => btn.disabled = count < upgrades[i].cost);
       }
 
       function updateTimer() {
-        const elapsed = Date.now()-startTime;
-        const hrs=String(Math.floor(elapsed/3600000)).padStart(2,'0');
-        const mins=String(Math.floor((elapsed%3600000)/60000)).padStart(2,'0');
-        const secs=String(Math.floor((elapsed%60000)/1000)).padStart(2,'0');
-        timerEl.textContent=`Time on site: ${hrs}:${mins}:${secs}`;
+        const elapsed = Date.now() - startTime;
+        const hrs = String(Math.floor(elapsed/3600000)).padStart(2,'0');
+        const mins = String(Math.floor((elapsed%3600000)/60000)).padStart(2,'0');
+        const secs = String(Math.floor((elapsed%60000)/1000)).padStart(2,'0');
+        timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
       }
 
       function recordClick() {
@@ -185,46 +177,56 @@
       }
 
       function saveState() {
-        const state={count,clickValue,data:clickData,upgrades};
-        const blob=new Blob([JSON.stringify(state)],{type:'application/json'});
-        const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='clicker_save.json';a.click();URL.revokeObjectURL(url);
+        const state = { count, clickValue, data: clickData, upgrades };
+        const blob = new Blob([JSON.stringify(state)],{type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='clicker_save.json'; a.click(); URL.revokeObjectURL(url);
       }
 
       function loadState(file) {
-        const reader=new FileReader();reader.onload=()=>{
-          const state=JSON.parse(reader.result);
-          count=state.count; clickValue=state.clickValue; upgrades=state.upgrades||upgrades;
-          clickData.labels=state.data.labels||[]; clickData.datasets[0].data=state.data.datasets[0].data||[];
+        const reader = new FileReader(); reader.onload = () => {
+          const state = JSON.parse(reader.result);
+          count = state.count; clickValue = state.clickValue; upgrades = state.upgrades;
+          clickData.labels = state.data.labels; clickData.datasets[0].data = state.data.datasets[0].data;
           clickChart.update(); renderShop(); updateDisplay();
-        };reader.readAsText(file);
+        };
+        reader.readAsText(file);
       }
 
-      themeToggle.addEventListener('click',()=>{
-        const cur=body.getAttribute('data-theme'), nxt=cur==='light'?'dark':'light';
-        body.setAttribute('data-theme',nxt); themeToggle.textContent=nxt==='light'?'Dark Mode':'Light Mode';
+      themeToggle.addEventListener('click', () => {
+        const cur = body.getAttribute('data-theme');
+        const nxt = cur === 'light' ? 'dark' : 'light';
+        body.setAttribute('data-theme', nxt);
+        themeToggle.textContent = nxt === 'light' ? 'Dark Mode' : 'Light Mode';
       });
-      loadBtn.addEventListener('click',()=>loadInput.click()); loadInput.addEventListener('change',e=>loadState(e.target.files[0]));
-      saveBtn.addEventListener('click',saveState);
+      saveBtn.addEventListener('click', saveState);
+      loadBtn.addEventListener('click', () => loadInput.click());
+      loadInput.addEventListener('change', e => loadState(e.target.files[0]));
 
-      clickBtn.addEventListener('click',()=>{count+=clickValue; updateDisplay(); recordClick();});
-      resetBtn.addEventListener('click',()=>{count=0;clickValue=1;clickData.labels=[];clickData.datasets[0].data=[];clickChart.update();updateDisplay();});
+      clickBtn.addEventListener('click', () => { count += clickValue; updateDisplay(); recordClick(); });
+      resetBtn.addEventListener('click', () => { count=0; clickValue=1; clickData.labels=[]; clickData.datasets[0].data=[]; clickChart.update(); updateDisplay(); });
 
-      godBtn.addEventListener('click',()=>{
-        godPanel.style.display = godPanel.style.display==='block' ? 'none' : 'block';
+      godBtn.addEventListener('click', () => {
+        godPanel.style.display = godPanel.style.display === 'block' ? 'none' : 'block';
         godCounter.value = count; godClick.value = clickValue;
         godUpgrades.value = JSON.stringify(upgrades, null, 2);
       });
-      godCancel.addEventListener('click',()=>godPanel.style.display='none');
-      godApply.addEventListener('click',()=>{
-        const newCount = parseInt(godCounter.value); const newClick = parseInt(godClick.value);
-        try{
-          const newUpgs = JSON.parse(godUpgrades.value);
-          if(Array.isArray(newUpgs)) { upgrades = newUpgs; count=isNaN(newCount)?count:newCount; clickValue=isNaN(newClick)?clickValue:newClick; renderShop(); updateDisplay(); godPanel.style.display='none'; }
-          else alert('Upgrades must be an array.');
-        } catch(e){ alert('Invalid JSON'); }
+      godCancel.addEventListener('click', () => godPanel.style.display = 'none');
+      godApply.addEventListener('click', () => {
+        const newCount = parseInt(godCounter.value);
+        const newClickV = parseInt(godClick.value);
+        try {
+          const newUp = JSON.parse(godUpgrades.value);
+          if (Array.isArray(newUp)) {
+            upgrades = newUp;
+            if (!isNaN(newCount)) count = newCount;
+            if (!isNaN(newClickV)) clickValue = newClickV;
+            renderShop(); updateDisplay(); godPanel.style.display = 'none';
+          } else alert('Upgrades must be an array');
+        } catch { alert('Invalid JSON'); }
       });
 
-      renderShop(); updateDisplay(); setInterval(updateTimer,1000);
+      renderShop(); updateDisplay(); setInterval(updateTimer, 1000);
     });
   </script>
 </body>
