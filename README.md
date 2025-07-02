@@ -1,5 +1,5 @@
-# cheerio
-rah
+# cheerio the page
+you have entered cheerio land
 
-# Contributors
-Applehat _(ya aint seein me)_
+# Apple Heasr
+Applehat _(ya aint seein me)_ *but i see you?*
