@@ -2,60 +2,41 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Enhanced Clicker with Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clicker Game</title>
   <style>
-    :root {
-      --primary: #4a90e2;
-      --secondary: #50e3c2;
-      --bg-gradient: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
-      --card-bg: #ffffff;
-      --card-shadow: rgba(0,0,0,0.1);
-      --text-color: #333;
-    }
-    [data-theme="dark"] {
-      --primary: #223344;
-      --secondary: #334455;
-      --bg-gradient: linear-gradient(135deg, #2c3e50 0%, #4c5c6c 100%);
-      --card-bg: #2a2a2a;
-      --card-shadow: rgba(0,0,0,0.5);
-      --text-color: #ddd;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-gradient);
-      background-size: cover;
-      background-position: center;
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh; color: var(--text-color);
-      position: relative;
-    }
-    .container {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 8px 16px var(--card-shadow);
-      padding: 2rem; margin: 2rem;
-      max-width: 600px; width: 100%;
-    }
-    #counter { font-size: 5rem; text-align: center; margin-bottom: 1rem; }
-    .controls, .shop-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1.5rem; }
-    button { flex: 1 1 120px; padding: 0.75rem; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background: var(--primary); color: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.1s, background 0.2s; }
-    button:hover:not(:disabled) { background: var(--secondary); transform: translateY(-2px); }
-    button:disabled { background: #666; cursor: not-allowed; }
-    .shop-item { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); padding: 0.5rem; text-align: center; flex: 1 1 100px; }
-    .info-box { background: var(--card-bg); color: var(--text-color); padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 4px 8px var(--card-shadow); text-align: center; font-size: 0.95rem; }
-    #clickChart { max-width: 100%; margin-top: 1rem; background: var(--card-bg); border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow); }
-    #timer { position: fixed; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.6); color: #fff; padding: 0.5rem 1rem; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    .credits { text-align: center; font-size: 0.8rem; margin-top: 1rem; color: var(--text-color); }
-    #purchase-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 3rem; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; z-index: 1000; }
-    #purchase-overlay.show { opacity: 1; visibility: visible; }
+    :root { --primary: #4a90e2; --secondary: #50e3c2; --bg-gradient: linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%); --card-bg:#fff; --card-shadow:rgba(0,0,0,0.1); --text-color:#333; }
+    [data-theme="dark"]{ --primary:#223344; --secondary:#334455; --bg-gradient:linear-gradient(135deg,#2c3e50 0%,#4c5c6c 100%); --card-bg:#2a2a2a; --card-shadow:rgba(0,0,0,0.5); --text-color:#ddd; }
+    *{box-sizing:border-box;}
+    body{margin:0;padding:0;font-family:Segoe UI, sans-serif;background:var(--bg-gradient);min-height:100vh;color:var(--text-color);display:flex;flex-direction:column;align-items:center;}
+    .top-bar{width:100%;display:flex;justify-content:flex-end;gap:1rem;padding:1rem;background:rgba(255,255,255,0.8);}
+    .top-bar[data-theme="dark"]{background:rgba(0,0,0,0.5);}
+    button{padding:.75rem 1rem;font-size:1rem;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;transition:background .2s;}
+    button:hover{background:var(--secondary);}
+    .container{background:var(--card-bg);border-radius:12px;box-shadow:0 8px 16px var(--card-shadow);padding:2rem;margin:2rem;width:90%;max-width:600px;position:relative;}
+    #counter{font-size:5rem;text-align:center;margin-bottom:1rem;}
+    .controls,.shop-buttons{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem;}
+    .shop-item{background:var(--card-bg);border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.05);padding:.5rem;text-align:center;flex:1 1 100px;}
+    .info-box{background:var(--card-bg);color:var(--text-color);padding:1rem;margin:1rem 0;border-radius:8px;box-shadow:0 4px 8px var(--card-shadow);text-align:center;font-size:.95rem;}
+    #clickChart{max-width:100%;margin-top:1rem;background:var(--card-bg);border-radius:12px;box-shadow:0 8px 16px var(--card-shadow);}
+    #timer{position:fixed;bottom:1rem;right:1rem;background:rgba(0,0,0,0.6);color:#fff;padding:.5rem 1rem;border-radius:8px;font-family:Courier New, monospace;font-size:.9rem;box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+    .credits{text-align:center;font-size:.8rem;margin-top:1rem;color:var(--text-color);}
+    #purchase-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);color:#fff;font-size:3rem;opacity:0;visibility:hidden;transition:opacity.3s;z-index:1000;}
+    #purchase-overlay.show{opacity:1;visibility:visible;}
+    .god-panel{position:absolute;top:1rem;left:1rem;background:var(--card-bg);padding:1rem;border-radius:8px;box-shadow:0 4px 8px var(--card-shadow);display:none;z-index:100;}
+    .god-panel input, .god-panel textarea{width:100%;margin:.25rem 0;padding:.5rem;border:1px solid #ccc;border-radius:4px;font-family:inherit;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div id="purchase-overlay"></div>
+  <div class="top-bar" data-theme="light">
+    <button id="theme-toggle">Dark Mode</button>
+    <button id="save-btn">Save</button>
+    <button id="load-btn">Load</button>
+    <input type="file" id="load-input" accept="application/json" style="display:none;">
+    <button id="god-btn">God Mode</button>
+  </div>
   <div class="container">
     <div id="counter">0</div>
     <div class="controls">
@@ -68,111 +49,61 @@
       <div class="shop-buttons" id="shop-buttons"></div>
     </div>
     <div class="info-box">
-      <strong>About this Clicker Game:</strong> Use the button to earn coins. Spend coins in the shop to boost your click power. Track your progress on the graph and watch the timer.
+      <strong>About:</strong> Click to earn coins, upgrade in shop, track on chart, see timer.
     </div>
     <canvas id="clickChart" width="400" height="200"></canvas>
     <div class="credits">Made By Morbitz And Applehat.</div>
+    <div class="god-panel" id="god-panel">
+      <h4>God Mode Settings</h4>
+      <label>Counter:<input type="number" id="god-counter"></label>
+      <label>Click Value:<input type="number" id="god-click"></label>
+      <label>Upgrades JSON:<textarea id="god-upgrades" rows="4"></textarea></label>
+      <button id="god-apply">Apply</button>
+      <button id="god-cancel">Cancel</button>
+    </div>
   </div>
   <div id="timer">Time on site: 00:00:00</div>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const body = document.documentElement;
-      const overlay = document.getElementById('purchase-overlay');
-      const counterEl = document.getElementById('counter');
-      const clickBtn = document.getElementById('click-btn');
-      const resetBtn = document.getElementById('reset-btn');
-      const shopBtn = document.getElementById('shop-btn');
-      const shopSection = document.getElementById('shop-section');
-      const shopButtonsDiv = document.getElementById('shop-buttons');
-      const timerEl = document.getElementById('timer');
-      const chartCtx = document.getElementById('clickChart').getContext('2d');
-
-      let count = 0;
-      let clickValue = 1;
-      const startTime = Date.now();
-      const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], borderColor: 'rgb(75,192,192)', fill: false, tension: 0.1 }] };
-      const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
-      const upgrades = [
-        { bonus: 2, cost: 50 },
-        { bonus: 5, cost: 200 },
-        { bonus: 10, cost: 500 },
-        { bonus: 20, cost: 2000 },
-        { bonus: 50, cost: 5000 },
-        { bonus: 100, cost: 20000 },
-        { bonus: 1000, cost: 100000 }
-      ];
-
-      function showPurchase(text) {
-        overlay.textContent = text;
-        overlay.classList.add('show');
-        setTimeout(() => overlay.classList.remove('show'), 1000);
-      }
-
-      function renderShop() {
-        shopButtonsDiv.innerHTML = '';
-        upgrades.forEach((u) => {
-          const btn = document.createElement('button');
-          btn.textContent = `+${u.bonus} (${u.cost})`;
-          btn.disabled = count < u.cost;
-          btn.addEventListener('click', e => {
-            e.stopPropagation();
-            count -= u.cost;
-            clickValue += u.bonus;
-            updateDisplay();
-            showPurchase(`+${u.bonus} Purchased!`);
-          });
-          const wrapper = document.createElement('div');
-          wrapper.className = 'shop-item';
-          wrapper.appendChild(btn);
-          shopButtonsDiv.appendChild(wrapper);
-        });
-      }
-
-      function updateDisplay() {
-        counterEl.textContent = count;
-        document.getElementById('click-value').textContent = clickValue;
-        document.querySelectorAll('.shop-item button').forEach((btn, i) => {
-          btn.disabled = count < upgrades[i].cost;
-        });
-      }
-
-      function updateTimer() {
-        const elapsed = Date.now() - startTime;
-        const hrs = String(Math.floor(elapsed / 3600000)).padStart(2, '0');
-        const mins = String(Math.floor((elapsed % 3600000) / 60000)).padStart(2, '0');
-        const secs = String(Math.floor((elapsed % 60000) / 1000)).padStart(2, '0');
-        timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
-      }
-
-      function recordClick() {
-        clickData.labels.push(clickData.labels.length + 1);
-        clickData.datasets[0].data.push(count);
-        clickChart.update();
-      }
-
-      clickBtn.addEventListener('click', () => {
-        count += clickValue;
-        updateDisplay();
-        recordClick();
-      });
-
-      resetBtn.addEventListener('click', () => {
-        count = 0;
-        clickValue = 1;
-        clickData.labels = [];
-        clickData.datasets[0].data = [];
-        clickChart.update();
-        updateDisplay();
-      });
-
-      shopBtn.addEventListener('click', () => {
-        shopSection.style.display = shopSection.style.display === 'none' ? 'block' : 'none';
-        renderShop();
-      });
-
-      renderShop();
-      updateDisplay();
-      setInterval(updateTimer, 1000);
+    document.addEventListener('DOMContentLoaded',()=>{
+      const body=document.documentElement;
+      const overlay=document.getElementById('purchase-overlay');
+      const ctr=document.getElementById('counter');
+      const clkBtn=document.getElementById('click-btn');
+      const rstBtn=document.getElementById('reset-btn');
+      const shopBtn=document.getElementById('shop-btn');
+      const shopSec=document.getElementById('shop-section');
+      const shopDiv=document.getElementById('shop-buttons');
+      const timerEl=document.getElementById('timer');
+      const themeT=document.getElementById('theme-toggle');
+      const saveB=document.getElementById('save-btn');
+      const loadB=document.getElementById('load-btn');
+      const loadI=document.getElementById('load-input');
+      const godB=document.getElementById('god-btn');
+      const godP=document.getElementById('god-panel');
+      const gCtr=document.getElementById('god-counter');
+      const gClk=document.getElementById('god-click');
+      const gUp=document.getElementById('god-upgrades');
+      const gApp=document.getElementById('god-apply');
+      const gCan=document.getElementById('god-cancel');
+      let count=0,clickV=1;const start=Date.now();
+      const data={labels:[],datasets:[{label:'Coins',data:[],borderColor:'rgb(75,192,192)',fill:false,tension:0.1}]};
+      const ctx=document.getElementById('clickChart').getContext('2d');
+      const chart=new Chart(ctx,{type:'line',data,options:{scales:{x:{title:{display:true,text:'Clicks'}},y:{title:{display:true,text:'Coins'}}}}});
+      let ups=[{bonus:2,cost:50},{bonus:5,cost:200},{bonus:10,cost:500},{bonus:20,cost:2000},{bonus:50,cost:5000},{bonus:100,cost:20000},{bonus:1000,cost:100000}];
+      function show(msg){overlay.textContent=msg;overlay.classList.add('show');setTimeout(()=>overlay.classList.remove('show'),1000);}      
+      function render(){shopDiv.innerHTML='';ups.forEach((u,i)=>{const b=document.createElement('button');b.textContent=`+${u.bonus} (${u.cost})`;b.disabled=count<u.cost;b.onclick=e=>{e.stopPropagation();count-=u.cost;clickV+=u.bonus;upd();show(`+${u.bonus}!`)};const d=document.createElement('div');d.className='shop-item';d.appendChild(b);shopDiv.appendChild(d);});}
+      function upd(){ctr.textContent=count;document.getElementById('click-value').textContent=clickV;document.querySelectorAll('.shop-item button').forEach((b,i)=>b.disabled=count<ups[i].cost);}
+      function tick(){const e=Date.now()-start,hrs=String(Math.floor(e/3600000)).padStart(2,'0'),mins=String(Math.floor((e%3600000)/60000)).padStart(2,'0'),secs=String(Math.floor((e%60000)/1000)).padStart(2,'0');timerEl.textContent=`Time on site: ${hrs}:${mins}:${secs}`;}
+      clkBtn.onclick=()=>{count+=clickV;upd();data.labels.push(data.labels.length+1);data.datasets[0].data.push(count);chart.update();};
+      rstBtn.onclick=()=>{count=0;clickV=1;data.labels=[];data.datasets[0].data=[];chart.update();upd();};
+      shopBtn.onclick=()=>{shopSec.style.display=shopSec.style.display==='none'?'block':'none';render();};
+      themeT.onclick=()=>{const t=body.getAttribute('data-theme')==='light'?'dark':'light';body.setAttribute('data-theme',t);themeT.textContent=t==='light'?'Dark Mode':'Light Mode';};
+      saveB.onclick=()=>{const s={count,clickV,data,ups};const b=new Blob([JSON.stringify(s)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='save.json';a.click();URL.revokeObjectURL(u);};
+      loadB.onclick=()=>loadI.click();loadI.onchange=e=>{const r=new FileReader();r.onload=()=>{const s=JSON.parse(r.result);count=s.count;clickV=s.clickV;ups=s.ups;data.labels=s.data.labels;data.datasets[0].data=s.data.datasets[0].data;chart.update();render();upd();};r.readAsText(e.target.files[0]);};
+      godB.onclick=()=>godP.style.display=godP.style.display==='block'?'none':'block';
+      gCan.onclick=()=>godP.style.display='none';
+      gApp.onclick=()=>{const nc=parseInt(gCtr.value),nv=parseInt(gClk.value);try{const nu=JSON.parse(gUp.value);if(Array.isArray(nu)){if(!isNaN(nc))count=nc;if(!isNaN(nv))clickV=nv;ups=nu;render();upd();godP.style.display='none';}else alert('Array');}catch{alert('JSON');}};
+      render();upd();setInterval(tick,1000);
     });
   </script>
 </body>
