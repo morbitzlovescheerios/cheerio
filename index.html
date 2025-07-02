@@ -1,241 +1,95 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clicker with Shop</title>
+  <title>Clicker Game</title>
   <style>
-    :root {
-      --primary: #4a90e2;
-      --secondary: #50e3c2;
-      --bg-gradient: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
-      --card-bg: #ffffff;
-      --card-shadow: rgba(0,0,0,0.1);
-      --text-color: #333;
-    }
-    [data-theme="dark"] {
-      --primary: #223344;
-      --secondary: #334455;
-      --bg-gradient: linear-gradient(135deg, #2c3e50 0%, #4c5c6c 100%);
-      --card-bg: #2a2a2a;
-      --card-shadow: rgba(0,0,0,0.5);
-      --text-color: #ddd;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    .top-bar {
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      padding: 1rem;
-      background: rgba(255,255,255,0.8);
-    }
-    .top-bar[data-theme="dark"] { background: rgba(0,0,0,0.5); }
-    button {
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background: var(--primary);
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover { background: var(--secondary); }
-    .container {
-      background: var(--card-bg);
-      margin: 2rem;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px var(--card-shadow);
-      width: 90%;
-      max-width: 600px;
-    }
-    #counter { font-size: 5rem; text-align: center; margin: 1rem 0; }
-    .controls, .shop-buttons {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 1rem;
-    }
-    .shop-item { flex: 1 1 100px; }
-    .info-box { text-align: center; margin: 1rem 0; }
-    #clickChart { width: 100%; margin-top: 1rem; }
-    #timer {
-      position: fixed; bottom: 1rem; right: 1rem;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 0.9rem;
-    }
-    .credits { text-align: center; margin-top: 1rem; font-size: 0.8rem; }
-    #purchase-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.8); color: #fff; font-size: 3rem;
-      opacity: 0; visibility: hidden; transition: opacity 0.3s;
-      z-index: 1000;
-    }
-    #purchase-overlay.show { opacity: 1; visibility: visible; }
+    body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    #app { background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 2rem; width: 320px; text-align: center; }
+    #counter { font-size: 4rem; margin-bottom: 1rem; }
+    .controls { display: flex; justify-content: space-around; margin-bottom: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; border: none; border-radius: 4px; background: #4a90e2; color: #fff; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #357ab8; }
+    #shop-section { display: none; margin-top: 1rem; }
+    .shop-item { margin: 0.5rem 0; }
+    .shop-item button { width: 100%; }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div id="purchase-overlay"></div>
-  <div class="top-bar" data-theme="light">
-    <button id="theme-toggle">Dark Mode</button>
-    <button id="save-btn">Save</button>
-    <button id="load-btn">Load</button>
-    <button id="god-btn">God Mode</button>
-    <input type="file" id="load-input" accept="application/json" style="display:none;">
-  </div>
-  <div class="container">
+  <div id="app">
     <div id="counter">0</div>
     <div class="controls">
-      <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
+      <button id="click-btn">Click +<span id="click-value">1</span></button>
       <button id="reset-btn">Reset</button>
+      <button id="shop-btn">Shop</button>
     </div>
-    <div class="shop">
-      <h3>Shop</h3>
-      <div class="shop-buttons" id="shop-buttons"></div>
-    </div>
-    <div class="info-box">
-      <strong>About:</strong> Click to earn coins, upgrade your clicks in the shop, track progress on the chart, and see elapsed time.
-    </div>
-    <canvas id="clickChart" width="400" height="200"></canvas>
-    <div class="credits">Made By Morbitz And Applehat.</div>
-    <div class="god-panel" id="god-panel" style="display:none;">
-      <h4>God Mode</h4>
-      <label>Counter: <input type="number" id="god-counter"></label><br>
-      <label>Click Value: <input type="number" id="god-click"></label><br>
-      <label>Upgrades JSON: <textarea id="god-upgrades" rows="4"></textarea></label><br>
-      <button id="god-apply">Apply</button>
-      <button id="god-cancel">Cancel</button>
+    <div id="shop-section">
+      <h4>Shop Upgrades</h4>
+      <div class="shop-item"><button data-bonus="2" data-cost="50"></button></div>
+      <div class="shop-item"><button data-bonus="5" data-cost="200"></button></div>
+      <div class="shop-item"><button data-bonus="10" data-cost="500"></button></div>
+      <div class="shop-item"><button data-bonus="20" data-cost="2000"></button></div>
+      <div class="shop-item"><button data-bonus="50" data-cost="5000"></button></div>
+      <div class="shop-item"><button data-bonus="100" data-cost="20000"></button></div>
+      <div class="shop-item"><button data-bonus="1000" data-cost="100000"></button></div>
     </div>
   </div>
-  <div id="timer">Time on site: 00:00:00</div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const body = document.documentElement;
-      const overlay = document.getElementById('purchase-overlay');
-      const themeToggle = document.getElementById('theme-toggle');
-      const saveBtn = document.getElementById('save-btn');
-      const loadBtn = document.getElementById('load-btn');
-      const loadInput = document.getElementById('load-input');
-      const godBtn = document.getElementById('god-btn');
-      const godPanel = document.getElementById('god-panel');
-      const godCounter = document.getElementById('god-counter');
-      const godClick = document.getElementById('god-click');
-      const godUpgrades = document.getElementById('god-upgrades');
-      const godApply = document.getElementById('god-apply');
-      const godCancel = document.getElementById('god-cancel');
-      const counterEl = document.getElementById('counter');
-      const clickBtn = document.getElementById('click-btn');
-      const resetBtn = document.getElementById('reset-btn');
-      const clickValueEl = document.getElementById('click-value');
-      const timerEl = document.getElementById('timer');
-      const shopButtonsDiv = document.getElementById('shop-buttons');
-      const chartCtx = document.getElementById('clickChart').getContext('2d');
+    const counterEl = document.getElementById('counter');
+    const clickBtn = document.getElementById('click-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const shopBtn = document.getElementById('shop-btn');
+    const shopSection = document.getElementById('shop-section');
+    const shopButtons = document.querySelectorAll('#shop-section button');
+    let count = 0;
+    let clickValue = 1;
 
-      let count = 0;
-      let clickValue = 1;
-      const startTime = Date.now();
-      const clickData = { labels: [], datasets: [{ label: 'Coins', data: [], borderColor: 'rgb(75,192,192)', fill: false }] };
-      const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: {} });
-      let upgrades = [
-        { bonus:2,cost:50 },{ bonus:5,cost:200 },{ bonus:10,cost:500 },{ bonus:20,cost:2000 },
-        { bonus:50,cost:5000 },{ bonus:100,cost:20000 },{ bonus:1000,cost:100000 }
-      ];
+    function format(num) {
+      return num.toLocaleString();
+    }
 
-      function showPurchase(text) {
-        overlay.textContent = text;
-        overlay.classList.add('show');
-        setTimeout(()=>overlay.classList.remove('show'),1000);
-      }
-      function renderShop() {
-        shopButtonsDiv.innerHTML = '';
-        upgrades.forEach((u,i)=>{
-          const btn = document.createElement('button');
-          btn.textContent = `+${u.bonus} (${u.cost})`;
-          btn.disabled = count < u.cost;
-          btn.onclick = e=>{e.stopPropagation(); count-=u.cost; clickValue+=u.bonus; updateDisplay(); showPurchase(`+${u.bonus} purchased!`);};
-          const div = document.createElement('div'); div.className='shop-item'; div.appendChild(btn);
-          shopButtonsDiv.appendChild(div);
-        });
-      }
-      function updateDisplay() {
-        counterEl.textContent = count;
-        clickValueEl.textContent = clickValue;
-        document.querySelectorAll('.shop-item button').forEach((btn,i)=>btn.disabled = count < upgrades[i].cost);
-      }
-      function updateTimer() {
-        const elapsed = Date.now() - startTime;
-        const hrs = String(Math.floor(elapsed/3600000)).padStart(2,'0');
-        const mins = String(Math.floor((elapsed%3600000)/60000)).padStart(2,'0');
-        const secs = String(Math.floor((elapsed%60000)/1000)).padStart(2,'0');
-        timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
-      }
-      function recordClick() {
-        clickData.labels.push(clickData.labels.length+1);
-        clickData.datasets[0].data.push(count);
-        clickChart.update();
-      }
-      function saveState() {
-        const state={count,clickValue,data:clickData,upgrades};
-        const blob=new Blob([JSON.stringify(state)],{type:'application/json'});
-        const url=URL.createObjectURL(blob);
-        const a=document.createElement('a');a.href=url;a.download='save.json';a.click();URL.revokeObjectURL(url);
-      }
-      function loadState(file) {
-        const reader=new FileReader();
-        reader.onload=()=>{
-          const s=JSON.parse(reader.result);
-          count=s.count;clickValue=s.clickValue;upgrades=s.upgrades;
-          clickData.labels=s.data.labels;clickData.datasets[0].data=s.data.datasets[0].data;
-          clickChart.update();renderShop();updateDisplay();
-        };
-        reader.readAsText(file);
-      }
-      themeToggle.onclick=()=>{
-        const cur=body.getAttribute('data-theme');
-        const nxt=cur==='light'?'dark':'light';
-        body.setAttribute('data-theme',nxt);
-        themeToggle.textContent = nxt==='light'?'Dark Mode':'Light Mode';
-      };
-      saveBtn.onclick=saveState;
-      loadBtn.onclick=()=>loadInput.click();
-      loadInput.onchange=e=>loadState(e.target.files[0]);
-      clickBtn.onclick=()=>{count+=clickValue;updateDisplay();recordClick();};
-      resetBtn.onclick=()=>{count=0;clickValue=1;clickData.labels=[];clickData.datasets[0].data=[];clickChart.update();updateDisplay();};
-      godBtn.onclick=()=>godPanel.style.display=godPanel.style.display==='none'?'block':'none';
-      godCancel.onclick=()=>godPanel.style.display='none';
-      godApply.onclick=()=>{
-        const nc=parseInt(godCounter.value),nv=parseInt(godClick.value);
-        try{
-          const nu=JSON.parse(godUpgrades.value);
-          if(Array.isArray(nu)){
-            if(!isNaN(nc))count=nc;
-            if(!isNaN(nv))clickValue=nv;
-            upgrades=nu;renderShop();updateDisplay();godPanel.style.display='none';
-          } else alert('Upgrades must be array');
-        }catch{alert('Invalid JSON');}
-      };
-      renderShop();updateDisplay();setInterval(updateTimer,1000);
+    function updateCounter() {
+      counterEl.textContent = format(count);
+      clickBtn.textContent = `Click +${format(clickValue)}`;
+    }
+
+    // Initialize shop button labels with commas
+    shopButtons.forEach(btn => {
+      const bonus = parseInt(btn.getAttribute('data-bonus'));
+      const cost = parseInt(btn.getAttribute('data-cost'));
+      btn.textContent = `+${format(bonus)} (${format(cost)})`;
+
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (count >= cost) {
+          count -= cost;
+          clickValue += bonus;
+          updateCounter();
+        } else {
+          alert('Not enough coins!');
+        }
+      });
     });
+
+    clickBtn.addEventListener('click', () => {
+      count += clickValue;
+      updateCounter();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      count = 0;
+      clickValue = 1;
+      updateCounter();
+    });
+
+    shopBtn.addEventListener('click', () => {
+      shopSection.style.display = shopSection.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Initialize
+    updateCounter();
   </script>
 </body>
 </html>
