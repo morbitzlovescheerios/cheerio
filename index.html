@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Clicker with Shop</title>
   <style>
     :root {
@@ -23,137 +23,68 @@
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-gradient);
-      background-size: cover;
-      background-position: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--text-color);
+      background-size: cover; background-position: center;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; color: var(--text-color);
       position: relative;
     }
     .top-bar {
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 1rem;
-      gap: 1rem;
-      background: rgba(255,255,255,0.8);
+      width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center;
+      padding: 1rem; gap: 1rem; background: rgba(255,255,255,0.8);
     }
-    .top-bar[data-theme="dark"] {
-      background: rgba(0,0,0,0.5);
+    .top-bar[data-theme="dark"] { background: rgba(0,0,0,0.5); }
+    .bg-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .bg-controls input[type="text"] {
+      padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 200px;
     }
-    .color-picker { display: none; }
-    .bg-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .bg-controls input[type="text"] { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
     .container {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 8px 16px var(--card-shadow);
-      padding: 2rem;
-      margin: 2rem;
-      max-width: 600px;
-      width: 100%;
-      position: relative;
+      background: var(--card-bg); border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow);
+      padding: 2rem; margin: 2rem; max-width: 600px; width: 100%; position: relative;
     }
     #counter {
-      font-size: 5rem;
-      margin-bottom: 1rem;
-      text-align: center;
+      font-size: 5rem; margin-bottom: 1rem; text-align: center;
       text-shadow: 2px 2px rgba(0,0,0,0.1);
     }
-    .controls {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-      margin-bottom: 1.5rem;
-    }
-    .shop-buttons {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+    .controls { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; }
+    .shop-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
     .shop-item {
-      background: var(--card-bg);
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      padding: 0.5rem;
-      text-align: center;
-      flex: 1 1 100px;
+      background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      padding: 0.5rem; text-align: center; flex: 1 1 100px;
     }
     .shop-item button { width: 100%; }
     .info-box {
-      background: var(--card-bg);
-      color: var(--text-color);
-      padding: 1rem;
-      margin: 1rem 0;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px var(--card-shadow);
-      text-align: center;
-      font-size: 0.95rem;
+      background: var(--card-bg); color: var(--text-color); padding: 1rem; margin: 1rem 0;
+      border-radius: 8px; box-shadow: 0 4px 8px var(--card-shadow);
+      text-align: center; font-size: 0.95rem;
     }
     #clickChart {
-      max-width: 100%;
-      margin-top: 1rem;
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 8px 16px var(--card-shadow);
+      max-width: 100%; margin-top: 1rem; background: var(--card-bg);
+      border-radius: 12px; box-shadow: 0 8px 16px var(--card-shadow);
     }
     #timer {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.9rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      position: fixed; bottom: 1rem; right: 1rem;
+      background: rgba(0,0,0,0.6); color: #fff; padding: 0.5rem 1rem;
+      border-radius: 8px; font-family: 'Courier New', monospace;
+      font-size: 0.9rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     .credits {
-      text-align: center;
-      font-size: 0.8rem;
-      margin-top: 1rem;
+      text-align: center; font-size: 0.8rem; margin-top: 1rem;
       color: var(--text-color);
     }
     #purchase-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.8);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease;
-      z-index: 1000;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8); color: #fff; display: flex;
+      align-items: center; justify-content: center; font-size: 3rem;
+      opacity: 0; visibility: hidden; transition: opacity 0.3s ease; z-index: 1000;
     }
     #purchase-overlay.show { opacity: 1; visibility: visible; }
     #load-input, #bg-file-input { position: absolute; left: -9999px; }
     button {
-      padding: 0.75rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: var(--primary);
-      color: #fff;
+      padding: 0.75rem; font-size: 1rem; border: none; border-radius: 8px;
+      cursor: pointer; background: var(--primary); color: #fff;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       transition: transform 0.1s, background 0.2s;
     }
@@ -171,11 +102,11 @@
     <button id="god-btn">God Mode</button>
     <div class="bg-controls">
       <button id="bg-upload-btn">Upload BG</button>
-      <input type="text" id="bg-url-input" placeholder="Image URL..." />
+      <input type="text" id="bg-url-input" placeholder="Image URL...">
       <button id="bg-url-btn">Set BG</button>
-      <input type="file" id="bg-file-input" accept="image/*" />
+      <input type="file" id="bg-file-input" accept="image/*">
     </div>
-    <input type="file" id="load-input" accept="application/json" />
+    <input type="file" id="load-input" accept="application/json">
   </div>
   <div class="container">
     <div id="counter">0</div>
@@ -192,15 +123,18 @@
     </div>
     <canvas id="clickChart" width="400" height="200"></canvas>
     <div class="credits">Made By Morbitz And Applehat.</div>
-    <div class="god-panel" id="god-panel">
+    <div class="god-panel" id="god-panel" style="display:none;">
       <h4>God Mode Settings</h4>
       <label for="god-counter">Set Counter:</label>
-      <input type="number" id="god-counter" />
+      <input type="number" id="god-counter">
       <label for="god-click">Set Click Value:</label>
-      <input type="number" id="god-click" />
+      <input type="number" id="god-click">
       <label for="god-upgrades">Customize Upgrades (JSON Array of {bonus,cost}):</label>
       <textarea id="god-upgrades"></textarea>
-      <div class="god-controls"><button id="god-apply">Apply</button><button id="god-cancel">Cancel</button></div>
+      <div class="god-controls">
+        <button id="god-apply">Apply</button>
+        <button id="god-cancel">Cancel</button>
+      </div>
     </div>
   </div>
   <div id="timer">Time on site: 00:00:00</div>
@@ -236,6 +170,17 @@
       const startTime = Date.now();
       const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], fill: false, borderColor: 'rgb(75,192,192)', tension: 0.1 }] };
       const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
-      let upgrades = [ { bonus: 2, cost: 50 },{ bonus: 5, cost: 200 },{ bonus: 10, cost: 500 },{ bonus: 20, cost: 2000 },{ bonus: 50, cost: 5000 },{ bonus: 100, cost: 20000 },{ bonus: 1000, cost: 100000 },{ bonus: 2000, cost: 250000 },{ bonus: 5000, cost: 600000 },{ bonus: 10000, cost: 1200000 } ];
+      let upgrades = [
+        { bonus: 2, cost: 50 },{ bonus: 5, cost: 200 },{ bonus: 10, cost: 500 },{ bonus: 20, cost: 2000 },
+        { bonus: 50, cost: 5000 },{ bonus: 100, cost: 20000 },{ bonus: 1000, cost: 100000 },{ bonus: 2000, cost: 250000 },
+        { bonus: 5000, cost: 600000 },{ bonus: 10000, cost: 1200000 }
+      ];
 
       function showPurchase(text) { overlay.textContent = text; overlay.classList.add('show'); setTimeout(() => overlay.classList.remove('show'), 1000); }
+      function renderShop() { shopButtonsDiv.innerHTML = ''; upgrades.forEach((u, i) => { const btn = document.createElement('button'); btn.textContent = `+${u.bonus} (${u.cost})`; btn.disabled = count < u.cost; btn.addEventListener('click', e => { e.stopPropagation(); count -= u.cost; clickValue += u.bonus; updateDisplay(); showPurchase(`+${u.bonus} Purchased!`); }); const wrapper = document.createElement('div'); wrapper.className = 'shop-item'; wrapper.appendChild(btn); shopButtonsDiv.appendChild(wrapper); }); }
+      function updateDisplay() { counterEl.textContent = count; clickValueEl.textContent = clickValue; document.querySelectorAll('.shop-item button').forEach((btn, i) => btn.disabled = count < upgrades[i].cost); }
+      function updateTimer() { const elapsed = Date.now() - startTime; const hrs = String(Math.floor(elapsed/3600000)).padStart(2,'0'); const mins = String(Math.floor((elapsed%3600000)/60000)).padStart(2,'0'); const secs = String(Math.floor((elapsed%60000)/1000)).padStart(2,'0'); timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`; }
+      function recordClick() { clickData.labels.push(clickData.labels.length + 1); clickData.datasets[0].data.push(count); clickChart.update(); }
+      function saveState() { const state = { count, clickValue, data: clickData, upgrades }; const blob = new Blob([JSON.stringify(state)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'clicker_save.json'; a.click(); URL.revokeObjectURL(url); }
+      function loadState(file) { const reader = new FileReader(); reader.onload = () => { const state = JSON
+
