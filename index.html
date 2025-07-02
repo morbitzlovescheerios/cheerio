@@ -3,26 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Clicker</title>
+  <title>Clicker with Shop</title>
   <style>
     body {
       font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      justify-content: flex-start;
+      padding: 2rem;
       background: #f0f0f0;
+      margin: 0;
     }
     #counter {
       font-size: 4rem;
       margin: 1rem 0;
     }
+    .buttons, .shop {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
     button {
       padding: 0.75rem 1.5rem;
-      font-size: 1.25rem;
-      margin: 0.5rem;
+      font-size: 1rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -30,31 +36,32 @@
       color: #fff;
       transition: background 0.2s;
     }
-    button:hover {
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
       background: #0056b3;
+    }
+    .shop {
+      border-top: 2px solid #ccc;
+      padding-top: 1rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    .shop button {
+      flex: 1 1 calc(33% - 1rem);
     }
   </style>
 </head>
 <body>
   <div id="counter">0</div>
-  <button id="click-btn">Click me! or else</button>
-  <button id="reset-btn">RESETNOOOO</button>
 
-  <script>
-    const counterEl = document.getElementById('counter');
-    const clickBtn   = document.getElementById('click-btn');
-    const resetBtn   = document.getElementById('reset-btn');
-    let count = 0;
+  <div class="buttons">
+    <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
+    <button id="reset-btn">Reset</button>
+  </div>
 
-    clickBtn.addEventListener('click', () => {
-      count++;
-      counterEl.textContent = count;
-    });
+  <div class="shop">
+    <h3>Shop</h3>
 
-    resetBtn.addEventListener('click', () => {
-      count = 0;
-      counterEl.textContent = count;
-    });
-  </script>
-</body>
-</html>
