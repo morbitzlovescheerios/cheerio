@@ -34,7 +34,7 @@
       box-shadow: 0 8px 16px var(--card-shadow);
       padding: 2rem;
       margin: 2rem;
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
     }
     #counter {
@@ -90,7 +90,25 @@
       font-size: 0.9rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
+    .info-box {
+      background: rgba(255,255,255,0.9);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+    #clickChart {
+      max-width: 100%;
+      margin-top: 1rem;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 8px 16px var(--card-shadow);
+    }
   </style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
@@ -111,8 +129,18 @@
         <div class="shop-item"><button id="buy-1000">+1000 (100000)</button></div>
       </div>
     </div>
+
+    <!-- Info Box About the Site -->
+    <div class="info-box">
+      <strong>About this Clicker Game:</strong> Use the big button to earn coins. Spend coins in the shop to increase your click power and earn more per click. Track your progress on the graph below and see how long you've been playing with the timer.
+    </div>
+
+    <!-- Graph Canvas -->
+    <canvas id="clickChart" width="400" height="200"></canvas>
   </div>
+
   <div id="timer">Time on site: 00:00:00</div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const counterEl     = document.getElementById('counter');
@@ -120,6 +148,7 @@
       const resetBtn      = document.getElementById('reset-btn');
       const clickValueEl  = document.getElementById('click-value');
       const timerEl       = document.getElementById('timer');
+      const chartCtx      = document.getElementById('clickChart').getContext('2d');
 
       const buy2Btn       = document.getElementById('buy-2');
       const buy5Btn       = document.getElementById('buy-5');
@@ -132,6 +161,10 @@
       let count = 0;
       let clickValue = 1;
       const startTime = Date.now();
+
+      // Chart setup
+      const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], fill: false, borderColor: 'rgb(75, 192, 192)', tension: 0.1 }] };
+      const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
 
       const upgrades = [
         { btn: buy2Btn,    bonus: 2,    cost: 50 },
@@ -146,9 +179,7 @@
       function updateDisplay() {
         counterEl.textContent    = count;
         clickValueEl.textContent = clickValue;
-        upgrades.forEach(u => {
-          u.btn.disabled = count < u.cost;
-        });
+        upgrades.forEach(u => u.btn.disabled = count < u.cost);
       }
 
       function updateTimer() {
@@ -159,14 +190,24 @@
         timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
       }
 
+      function recordClick() {
+        clickData.labels.push(clickData.labels.length + 1);
+        clickData.datasets[0].data.push(count);
+        clickChart.update();
+      }
+
       clickBtn.addEventListener('click', () => {
         count += clickValue;
         updateDisplay();
+        recordClick();
       });
 
       resetBtn.addEventListener('click', () => {
         count = 0;
         clickValue = 1;
+        clickData.labels.length = 0;
+        clickData.datasets[0].data.length = 0;
+        clickChart.update();
         updateDisplay();
       });
 
