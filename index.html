@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cheerio Clicker</title>
+  <title>Enhanced Clicker with Shop</title>
   <style>
     :root {
       --primary: #4a90e2;
@@ -23,6 +23,7 @@
       align-items: center;
       min-height: 100vh;
       color: #333;
+      position: relative;
     }
     h3 {
       margin: 0 0 0.5rem;
@@ -77,6 +78,18 @@
       text-align: center;
       flex: 1 1 100px;
     }
+    #timer {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
@@ -86,7 +99,6 @@
       <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
       <button id="reset-btn">Reset</button>
     </div>
-
     <div class="shop">
       <h3>Shop</h3>
       <div class="shop-buttons">
@@ -100,34 +112,35 @@
       </div>
     </div>
   </div>
-
+  <div id="timer">Time on site: 00:00:00</div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const counterEl    = document.getElementById('counter');
-      const clickBtn     = document.getElementById('click-btn');
-      const resetBtn     = document.getElementById('reset-btn');
-      const clickValueEl = document.getElementById('click-value');
+      const counterEl     = document.getElementById('counter');
+      const clickBtn      = document.getElementById('click-btn');
+      const resetBtn      = document.getElementById('reset-btn');
+      const clickValueEl  = document.getElementById('click-value');
+      const timerEl       = document.getElementById('timer');
 
-      // shop buttons
-      const buy2Btn   = document.getElementById('buy-2');
-      const buy5Btn   = document.getElementById('buy-5');
-      const buy10Btn  = document.getElementById('buy-10');
-      const buy20Btn  = document.getElementById('buy-20');
-      const buy50Btn  = document.getElementById('buy-50');
-      const buy100Btn = document.getElementById('buy-100');
-      const buy1000Btn= document.getElementById('buy-1000');
+      const buy2Btn       = document.getElementById('buy-2');
+      const buy5Btn       = document.getElementById('buy-5');
+      const buy10Btn      = document.getElementById('buy-10');
+      const buy20Btn      = document.getElementById('buy-20');
+      const buy50Btn      = document.getElementById('buy-50');
+      const buy100Btn     = document.getElementById('buy-100');
+      const buy1000Btn    = document.getElementById('buy-1000');
 
       let count = 0;
       let clickValue = 1;
+      const startTime = Date.now();
 
       const upgrades = [
-        { btn: buy2Btn,   bonus: 2,    cost: 50 },
-        { btn: buy5Btn,   bonus: 5,    cost: 200 },
-        { btn: buy10Btn,  bonus: 10,   cost: 500 },
-        { btn: buy20Btn,  bonus: 20,   cost: 2000 },
-        { btn: buy50Btn,  bonus: 50,   cost: 5000 },
-        { btn: buy100Btn, bonus: 100,  cost: 20000 },
-        { btn: buy1000Btn,bonus: 1000, cost: 100000 },
+        { btn: buy2Btn,    bonus: 2,    cost: 50 },
+        { btn: buy5Btn,    bonus: 5,    cost: 200 },
+        { btn: buy10Btn,   bonus: 10,   cost: 500 },
+        { btn: buy20Btn,   bonus: 20,   cost: 2000 },
+        { btn: buy50Btn,   bonus: 50,   cost: 5000 },
+        { btn: buy100Btn,  bonus: 100,  cost: 20000 },
+        { btn: buy1000Btn, bonus: 1000, cost: 100000 },
       ];
 
       function updateDisplay() {
@@ -136,6 +149,14 @@
         upgrades.forEach(u => {
           u.btn.disabled = count < u.cost;
         });
+      }
+
+      function updateTimer() {
+        const elapsed = Date.now() - startTime;
+        const hrs = String(Math.floor(elapsed / 3600000)).padStart(2, '0');
+        const mins = String(Math.floor((elapsed % 3600000) / 60000)).padStart(2, '0');
+        const secs = String(Math.floor((elapsed % 60000) / 1000)).padStart(2, '0');
+        timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
       }
 
       clickBtn.addEventListener('click', () => {
@@ -160,6 +181,7 @@
       });
 
       updateDisplay();
+      setInterval(updateTimer, 1000);
     });
   </script>
 </body>
