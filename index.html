@@ -196,10 +196,134 @@
       <button id="god-apply">Apply</button>
       <button id="god-cancel">Cancel</button>
     </div>
-  </body>
+  </div>
+  <div id="timer">Time on site: 00:00:00</div>
   <script>
-    document.addEventListener('DOMContentLoaded',()=>{
-      // JS code as before
+    document.addEventListener('DOMContentLoaded', () => {
+      const body = document.documentElement;
+      const overlay = document.getElementById('purchase-overlay');
+      const settingsBtn = document.getElementById('settings-btn');
+      const settingsPanel = document.getElementById('settings-panel');
+      const animToggle = document.getElementById('toggle-animations');
+      let animations = true;
+      settingsBtn.onclick = () => settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+      document.getElementById('settings-close').onclick = () => settingsPanel.style.display = 'none';
+      animToggle.onchange = () => animations = animToggle.checked;
+
+      const counterEl = document.getElementById('counter');
+      const clickBtn = document.getElementById('click-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const shopBtn = document.getElementById('shop-btn');
+      const shopSection = document.getElementById('shop-section');
+      const shopButtonsDiv = document.getElementById('shop-buttons');
+      const timerEl = document.getElementById('timer');
+      const themeToggle = document.getElementById('theme-toggle');
+      const saveBtn = document.getElementById('save-btn');
+      const loadBtn = document.getElementById('load-btn');
+      const loadInput = document.getElementById('load-input');
+      const godBtn = document.getElementById('god-btn');
+      const godPanel = document.getElementById('god-panel');
+      const godCounter = document.getElementById('god-counter');
+      const godClick = document.getElementById('god-click');
+      const godUpgrades = document.getElementById('god-upgrades');
+      const godApply = document.getElementById('god-apply');
+      const godCancel = document.getElementById('god-cancel');
+
+      let count = 0;
+      let clickValue = 1;
+      const startTime = Date.now();
+      const clickData = { labels: [], datasets: [{ label: 'Coins Over Time', data: [], borderColor: 'rgb(75,192,192)', fill: false, tension: 0.1 }] };
+      const chartCtx = document.getElementById('clickChart').getContext('2d');
+      const clickChart = new Chart(chartCtx, { type: 'line', data: clickData, options: { scales: { x: { title: { display: true, text: 'Clicks' } }, y: { title: { display: true, text: 'Coins' } } } } });
+
+      let upgrades = [
+        { bonus: 2, cost: 50 },
+        { bonus: 5, cost: 200 },
+        { bonus: 10, cost: 500 },
+        { bonus: 20, cost: 2000 },
+        { bonus: 50, cost: 5000 },
+        { bonus: 100, cost: 20000 },
+        { bonus: 1000, cost: 100000 },
+        { bonus: 2000, cost: 250000 },
+        { bonus: 5000, cost: 600000 },
+        { bonus: 10000, cost: 1200000 },
+        { bonus: 20000, cost: 2500000 },
+        { bonus: 50000, cost: 6000000 },
+        { bonus: 100000, cost: 12000000 },
+        { bonus: 200000, cost: 25000000 },
+        { bonus: 500000, cost: 60000000 },
+        { bonus: 1000000, cost: 120000000 },
+        { bonus: 2000000, cost: 250000000 },
+        { bonus: 5000000, cost: 600000000 },
+        { bonus: 10000000, cost: 1200000000 },
+        { bonus: 20000000, cost: 2500000000 },
+        { bonus: 50000000, cost: 6000000000 },
+        { bonus: 100000000, cost: 12000000000 },
+        { bonus: 200000000, cost: 25000000000 },
+        { bonus: 500000000, cost: 60000000000 }
+      ];
+
+      function showPurchase(text) {
+        if (!animations) return;
+        overlay.textContent = text;
+        overlay.classList.add('show');
+        setTimeout(() => overlay.classList.remove('show'), 1000);
+      }
+
+      function renderShop() {
+        shopButtonsDiv.innerHTML = '';
+        upgrades.forEach((u, i) => {
+          const btn = document.createElement('button');
+          btn.textContent = `+${u.bonus} (${u.cost})`;
+          btn.disabled = count < u.cost;
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            count -= u.cost;
+            clickValue += u.bonus;
+            updateDisplay();
+            showPurchase(`+${u.bonus} Purchased!`);
+          });
+          const wrapper = document.createElement('div');
+          wrapper.className = 'shop-item';
+          wrapper.appendChild(btn);
+          shopButtonsDiv.appendChild(wrapper);
+        });
+      }
+
+      function updateDisplay() {
+        counterEl.textContent = count;
+        document.getElementById('click-value').textContent = clickValue;
+        document.querySelectorAll('.shop-item button').forEach((btn, i) => btn.disabled = count < upgrades[i].cost);
+      }
+
+      function updateTimer() {
+        const elapsed = Date.now() - startTime;
+        const hrs = String(Math.floor(elapsed / 3600000)).padStart(2, '0');
+        const mins = String(Math.floor((elapsed % 3600000) / 60000)).padStart(2, '0');
+        const secs = String(Math.floor((elapsed % 60000) / 1000)).padStart(2, '0');
+        timerEl.textContent = `Time on site: ${hrs}:${mins}:${secs}`;
+      }
+
+      clickBtn.addEventListener('click', () => { count += clickValue; updateDisplay(); clickData.labels.push(clickData.labels.length + 1); clickData.datasets[0].data.push(count); clickChart.update(); });
+      resetBtn.addEventListener('click', () => {
+        const behavior = document.querySelector('input[name="reset-behavior"]:checked').value;
+        if (behavior === 'countAndClick') clickValue = 1;
+        count = 0;
+        clickData.labels = [];
+        clickData.datasets[0].data = [];
+        clickChart.update();
+        updateDisplay();
+      });
+      shopBtn.addEventListener('click', () => { shopSection.style.display = shopSection.style.display === 'none' ? 'block' : 'none'; renderShop(); });
+      themeToggle.addEventListener('click', () => { const t = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light'; body.setAttribute('data-theme', t); themeToggle.textContent = t === 'light' ? 'Dark Mode' : 'Light Mode'; });
+      saveBtn.addEventListener('click', () => { const state = { count, clickValue, clickData, upgrades }; const blob = new Blob([JSON.stringify(state)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'save.json'; a.click(); URL.revokeObjectURL(url); });
+      loadBtn.addEventListener('click', () => loadInput.click());
+      loadInput.addEventListener('change', e => { const reader = new FileReader(); reader.onload = () => { const s = JSON.parse(reader.result); count = s.count; clickValue = s.clickValue; upgrades = s.upgrades; clickData.labels = s.clickData.labels; clickData.datasets[0].data = s.clickData.datasets[0].data; clickChart.update(); renderShop(); updateDisplay(); }; reader.readAsText(e.target.files[0]); });
+      godBtn.addEventListener('click', () => { godPanel.style.display = godPanel.style.display === 'block' ? 'none' : 'block'; });
+      godCancel.addEventListener('click', () => godPanel.style.display = 'none');
+      godApply.addEventListener('click', () => { const nc = parseInt(godCounter.value), nv = parseInt(godClick.value); try { const nu = JSON.parse(godUpgrades.value); if (Array.isArray(nu)) { if (!isNaN(nc)) count = nc; if (!isNaN(nv)) clickValue = nv; upgrades = nu; renderShop(); updateDisplay(); godPanel.style.display = 'none'; } else alert('Upgrades must be array'); } catch { alert('Invalid JSON'); } });
+      renderShop(); updateDisplay(); setInterval(updateTimer, 1000);
     });
   </script>
+</body>
 </html>
