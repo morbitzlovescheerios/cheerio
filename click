@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clicker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    #counter {
+      font-size: 4rem;
+      margin: 1rem 0;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1.25rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="counter">0</div>
+  <button id="click-btn">Click me!</button>
+  <button id="reset-btn">Reset</button>
+
+  <script>
+    const counterEl = document.getElementById('counter');
+    const clickBtn   = document.getElementById('click-btn');
+    const resetBtn   = document.getElementById('reset-btn');
+    let count = 0;
+
+    clickBtn.addEventListener('click', () => {
+      count++;
+      counterEl.textContent = count;
+    });
+
+    resetBtn.addEventListener('click', () => {
+      count = 0;
+      counterEl.textContent = count;
+    });
+  </script>
+</body>
+</html>
