@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Enhanced Clicker with Shop</title>
   <style>
-    :root { --primary:#4a90e2;--secondary:#50e3c2;--bg-gradient:linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%);--card-bg:#fff;--card-shadow:rgba(0,0,0,0.1);--text-color:#333; }
-    [data-theme="dark"] { --primary:#223344;--secondary:#334455;--bg-gradient:linear-gradient(135deg,#2c3e50 0%,#4c5c6c 100%);--card-bg:#2a2a2a;--card-shadow:rgba(0,0,0,0.5);--text-color:#ddd; }
+    :root { --primary:#4a90e2; --secondary:#50e3c2; --bg-gradient:linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%); --card-bg:#fff; --card-shadow:rgba(0,0,0,0.1); --text-color:#333; }
+    [data-theme="dark"] { --primary:#223344; --secondary:#334455; --bg-gradient:linear-gradient(135deg,#2c3e50 0%,#4c5c6c 100%); --card-bg:#2a2a2a; --card-shadow:rgba(0,0,0,0.5); --text-color:#ddd; }
+    .theme-blue { --bg-gradient: linear-gradient(135deg,#a8edea 0%,#fed6e3 100%); }
+    .theme-red { --bg-gradient: linear-gradient(135deg,#f093fb 0%,#f5576c 100%); }
     * { box-sizing: border-box; }
     body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:var(--bg-gradient); display:flex; flex-direction:column; align-items:center; min-height:100vh; color:var(--text-color); }
     #settings-btn { position:absolute; top:1rem; left:1rem; background:var(--secondary); border:none; border-radius:50%; width:36px; height:36px; color:#fff; font-size:1.2rem; cursor:pointer; }
@@ -29,8 +31,6 @@
     #purchase-overlay.show { opacity:1; visibility:visible; }
     .achievements { margin-top:1rem; display:none; max-height:200px; overflow-y:auto; }
     .achievement { background:var(--secondary); color:#fff; padding:.5rem; margin:.25rem 0; border-radius:4px; opacity:.9; }
-    .god-panel { display:none; position:absolute; top:1rem; left:1rem; background:var(--card-bg); padding:1rem; border-radius:8px; box-shadow:0 4px 8px var(--card-shadow); z-index:100; }
-    .god-panel input, .god-panel textarea { width:100%; margin:.25rem 0; padding:.5rem; border:1px solid #ccc; border-radius:4px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -58,15 +58,18 @@
     <div class="controls">
       <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
       <button id="autoclick-btn">Buy Auto-Clicker (Cost: <span id="autocost">100</span>)</button>
+      <button id="toggle-auto-btn">Pause Auto</button>
       <button id="reset-btn">Reset</button>
       <button id="shop-btn">Shop</button>
     </div>
     <div class="shop" id="shop-section" style="display:none;">
-      <h3>Shop</h3>
+      <h3>Upgrades</h3>
       <div class="shop-buttons" id="shop-buttons"></div>
+      <h3>Cosmetics</h3>
+      <div class="shop-buttons" id="cosmetics-buttons"></div>
     </div>
     <div class="info-box">
-      <strong>About:</strong> Click to earn coins, buy auto-clickers, purchase upgrades.
+      <strong>About:</strong> Click to earn coins, buy auto-clickers, purchase upgrades, apply cosmetics.
     </div>
     <canvas id="clickChart" width="400" height="200"></canvas>
     <div class="achievements" id="achievements"></div>
@@ -86,51 +89,42 @@
       const body=document.documentElement;
       const overlay=document.getElementById('purchase-overlay');
       const settingsBtn=document.getElementById('settings-btn'), settingsPanel=document.getElementById('settings-panel'), animToggle=document.getElementById('toggle-animations');
-      let animations=true;
-      settingsBtn.onclick=()=>settingsPanel.style.display=settingsPanel.style.display==='block'?'none':'block';
-      document.getElementById('settings-close').onclick=()=>settingsPanel.style.display='none';
-      animToggle.onchange=()=>animations=animToggle.checked;
-      const counterEl=document.getElementById('counter'), clickBtn=document.getElementById('click-btn'), autoBtn=document.getElementById('autoclick-btn'), autocostEl=document.getElementById('autocost'), resetBtn=document.getElementById('reset-btn'), shopBtn=document.getElementById('shop-btn'), shopSection=document.getElementById('shop-section'), shopDiv=document.getElementById('shop-buttons'), achievementsDiv=document.getElementById('achievements'), timerEl=document.getElementById('timer'), themeToggle=document.getElementById('theme-toggle'), saveBtn=document.getElementById('save-btn'), loadBtn=document.getElementById('load-btn'), loadInput=document.getElementById('load-input'), achBtn=document.getElementById('ach-btn');
+      let animations=true; settingsBtn.onclick=()=>settingsPanel.style.display=settingsPanel.style.display==='block'?'none':'block';
+      document.getElementById('settings-close').onclick=()=>settingsPanel.style.display='none'; animToggle.onchange=()=>animations=animToggle.checked;
+      const counterEl=document.getElementById('counter'), clickBtn=document.getElementById('click-btn'), autoBtn=document.getElementById('autoclick-btn'), toggleAutoBtn=document.getElementById('toggle-auto-btn'), autocostEl=document.getElementById('autocost'), resetBtn=document.getElementById('reset-btn'), shopBtn=document.getElementById('shop-btn'), shopSection=document.getElementById('shop-section'), shopDiv=document.getElementById('shop-buttons'), cosmeticsDiv=document.getElementById('cosmetics-buttons'), achievementsDiv=document.getElementById('achievements'), timerEl=document.getElementById('timer'), themeToggle=document.getElementById('theme-toggle'), saveBtn=document.getElementById('save-btn'), loadBtn=document.getElementById('load-btn'), loadInput=document.getElementById('load-input'), achBtn=document.getElementById('ach-btn');
       const godBtn=document.getElementById('god-btn'), godPanel=document.getElementById('god-panel'), godCounter=document.getElementById('god-counter'), godClick=document.getElementById('god-click'), godUpgrades=document.getElementById('god-upgrades'), godApply=document.getElementById('god-apply'), godCancel=document.getElementById('god-cancel');
-      let count=0,clickValue=1,autoCount=0,autoCost=100,usedGodMode=false;
-      const startTime=localStorage.getItem('sessionStart')||Date.now();
-      if(!localStorage.getItem('sessionStart')) localStorage.setItem('sessionStart',startTime);
+      let count=0,clickValue=1,autoCount=0,autoCost=100,usedGodMode=false,autoIntervals=[];
+      const startTime=localStorage.getItem('sessionStart')||Date.now(); if(!localStorage.getItem('sessionStart')) localStorage.setItem('sessionStart',startTime);
       const clickData={labels:[],datasets:[{label:'Coins',data:[],borderColor:'rgb(75,192,192)',fill:false,tension:0.1}]};
-      const ctx=document.getElementById('clickChart').getContext('2d');
-      const chart=new Chart(ctx,{type:'line',data:clickData,options:{scales:{x:{title:{display:true,text:'Clicks'}},y:{title:{display:true,text:'Coins'}}}}});
-      const upgrades=[
-        {bonus:2,cost:50},{bonus:5,cost:200},{bonus:10,cost:500},{bonus:20,cost:2000},{bonus:50,cost:5000},{bonus:100,cost:20000},{bonus:1000,cost:100000},
-        {bonus:2000,cost:250000},{bonus:5000,cost:600000},{bonus:10000,cost:1200000},{bonus:20000,cost:2500000},{bonus:50000,cost:6000000},
-        {bonus:100000,cost:12000000},{bonus:200000,cost:25000000},{bonus:500000,cost:60000000},{bonus:1000000,cost:120000000},
-        {bonus:2000000,cost:250000000},{bonus:5000000,cost:600000000},{bonus:10000000,cost:1200000000},{bonus:20000000,cost:2500000000},
-        {bonus:50000000,cost:6000000000},{bonus:100000000,cost:12000000000},{bonus:200000000,cost:25000000000},{bonus:500000000,cost:60000000000}
-      ];
-      const achs=[
-        {name:'Addictive',cond:()=>Date.now()-startTime>=3600000},
-        {name:'hey stop!',cond:()=>usedGodMode}
-      ]; let unlocked=new Set();
-      function showPurchase(msg){if(animations){overlay.textContent=msg;overlay.classList.add('show');setTimeout(()=>overlay.classList.remove('show'),1000);}}
-      function renderShop(){shopDiv.innerHTML='';upgrades.forEach(u=>{const btn=document.createElement('button');btn.textContent=`+${u.bonus} (${u.cost})`;btn.disabled=count<u.cost;btn.onclick=e=>{count-=u.cost;clickValue+=u.bonus;updateDisplay();};const div=document.createElement('div');div.className='shop-item';div.appendChild(btn);shopDiv.appendChild(div);});}
-      function renderAchievements(){achievementsDiv.innerHTML='';unlocked.forEach(name=>{const d=document.createElement('div');d.className='achievement';d.textContent=name;achievementsDiv.appendChild(d);});}
-      function checkAchievements(){achs.forEach(a=>{try{if(a.cond()&&!unlocked.has(a.name)){unlocked.add(a.name);saveState();renderAchievements();}}catch{}});}
-      function updateDisplay(){counterEl.textContent=count;document.getElementById('click-value').textContent=clickValue;autocostEl.textContent=autoCost;chart.update();checkAchievements();}
-      function saveState(){const state={count,clickValue,autoCount,autoCost,achievements:[...unlocked],usedGodMode};localStorage.setItem('clickerSave',JSON.stringify(state));}
-      function loadState(){const s=JSON.parse(localStorage.getItem('clickerSave')||'{}');if(s){count=s.count||0;clickValue=s.clickValue||1;autoCount=s.autoCount||0;autoCost=s.autoCost||100;usedGodMode=s.usedGodMode||false;unlocked=new Set(s.achievements||[]);}saveState();updateDisplay();renderAchievements();}
-      clickBtn.onclick=()=>{count+=clickValue;clickData.labels.push(clickData.labels.length+1);clickData.datasets[0].data.push(count);updateDisplay();saveState();};
-      autoBtn.onclick=()=>{if(count>=autoCost){count-=autoCost;autoCount++;autoCost=Math.floor(autoCost*1.5);setInterval(()=>{count+=clickValue;updateDisplay();saveState();},1000);updateDisplay();saveState();}};
-      resetBtn.onclick=()=>{const b=document.querySelector('input[name="reset-behavior"]:checked').value;if(b==='countAndClick')clickValue=1;count=0;autoCount=0;autoCost=100;clickData.labels=[];clickData.datasets[0].data=[];updateDisplay();saveState();renderAchievements();};
-      shopBtn.onclick=()=>{shopSection.style.display=shopSection.style.display==='none'?'block':'none';renderShop();};
-      setInterval(()=>{const e=Date.now()-startTime;const hrs=String(Math.floor(e/3600000)).padStart(2,'0');const mins=String(Math.floor((e%3600000)/60000)).padStart(2,'0');const secs=String(Math.floor((e%60000)/1000)).padStart(2,'0');timerEl.textContent=`Time on site: ${hrs}:${mins}:${secs}`;updateDisplay();},1000);
-      themeToggle.onclick=()=>{const t=body.getAttribute('data-theme')==='light'?'dark':'light';body.setAttribute('data-theme',t);themeToggle.textContent=t==='light'?'Dark Mode':'Light Mode';saveState();};
+      const ctx=document.getElementById('clickChart').getContext('2d'); const chart=new Chart(ctx,{type:'line',data:clickData,options:{scales:{x:{title:{display:true,text:'Clicks'}},y:{title:{display:true,text:'Coins'}}}}});
+      const upgrades=[{bonus:2,cost:50},{bonus:5,cost:200},{bonus:10,cost:500},{bonus:20,cost:2000},{bonus:50,cost:5000},{bonus:100,cost:20000},{bonus:1000,cost:100000},{bonus:2000,cost:250000},{bonus:5000,cost:600000},{bonus:10000,cost:1200000},{bonus:20000,cost:2500000},{bonus:50000,cost:6000000},{bonus:100000,cost:12000000},{bonus:200000,cost:25000000},{bonus:500000,cost:60000000},{bonus:1000000,cost:120000000},{bonus:2000000,cost:250000000},{bonus:5000000,cost:600000000},{bonus:10000000,cost:1200000000},{bonus:20000000,cost:2500000000},{bonus:50000000,cost:6000000000},{bonus:100000000,cost:12000000000},{bonus:200000000,cost:25000000000},{bonus:500000000,cost:60000000000}];
+      const cosmetics=[{name:'Blue Theme',cost:500,class:'theme-blue'},{name:'Red Theme',cost:500,class:'theme-red'}];
+      const achs=[{name:'Addictive',cond:()=>Date.now()-startTime>=3600000},{name:'hey stop!',cond:()=>usedGodMode}]; let unlocked=new Set();
+      function showPurchase(msg){ if(animations){ overlay.textContent=msg; overlay.classList.add('show'); setTimeout(()=>overlay.classList.remove('show'),1000); }}
+      function renderShop(){ shopDiv.innerHTML=''; upgrades.forEach(u=>{ const b=document.createElement('button'); b.textContent=`+${u.bonus} (${u.cost})`; b.disabled=count<u.cost; b.onclick=()=>{ count-=u.cost; clickValue+=u.bonus; updateDisplay(); saveState(); showPurchase(`+${u.bonus}!`); }; const d=document.createElement('div'); d.className='shop-item'; d.appendChild(b); shopDiv.appendChild(d); }); }
+      function renderCosmetics(){ cosmeticsDiv.innerHTML=''; cosmetics.forEach(c=>{ const b=document.createElement('button'); b.textContent=`${c.name} (${c.cost})`; b.disabled=count<c.cost; b.onclick=()=>{ count-=c.cost; body.classList.add(c.class); saveState(); updateDisplay(); showPurchase(c.name); }; const d=document.createElement('div'); d.className='shop-item'; d.appendChild(b); cosmeticsDiv.appendChild(d); }); }
+      function renderAchievements(){ achievementsDiv.innerHTML=''; unlocked.forEach(n=>{ const d=document.createElement('div'); d.className='achievement'; d.textContent=n; achievementsDiv.appendChild(d); }); }
+      function checkAchievements(){ achs.forEach(a=>{ if(a.cond()&&!unlocked.has(a.name)){ unlocked.add(a.name); saveState(); renderAchievements(); showPurchase(a.name); } }); }
+      function updateDisplay(){ counterEl.textContent=count; document.getElementById('click-value').textContent=clickValue; autocostEl.textContent=autoCost; chart.update(); checkAchievements(); }
+      function saveState(){ const s={ count,clickValue,autoCount,autoCost,achievements:[...unlocked],usedGodMode,bodyClass:body.className }; localStorage.setItem('clickerSave',JSON.stringify(s)); }
+      function loadState(){ const s=JSON.parse(localStorage.getItem('clickerSave')||'{}'); if(s.count!=null){ count=s.count; clickValue=s.clickValue; autoCount=s.autoCount; autoCost=s.autoCost; s.achievements.forEach(n=>unlocked.add(n)); usedGodMode=s.usedGodMode; body.className=s.bodyClass; } saveState(); updateDisplay(); renderAchievements(); }
+      clickBtn.onclick=()=>{ count+=clickValue; clickData.labels.push(clickData.labels.length+1); clickData.datasets[0].data.push(count); updateDisplay(); saveState(); };
+      autoBtn.onclick=()=>{ if(count>=autoCost){ count-=autoCost; autoCount++; clearAuto(); startAuto(); updateDisplay(); saveState(); } };
+      function startAuto(){ for(let i=0;i<autoCount;i++){ autoIntervals.push(setInterval(()=>{ count+=clickValue; updateDisplay(); saveState(); },1000)); }}
+      function clearAuto(){ autoIntervals.forEach(id=>clearInterval(id)); autoIntervals=[]; }
+      toggleAutoBtn.onclick=()=>{ if(autoIntervals.length){ clearAuto(); toggleAutoBtn.textContent='Resume Auto'; } else { startAuto(); toggleAutoBtn.textContent='Pause Auto'; } };
+      resetBtn.onclick=()=>{ const b=document.querySelector('input[name="reset-behavior"]:checked').value; if(b==='countAndClick')clickValue=1; count=0; autoCount=0; autoCost=100; clearAuto(); clickData.labels=[]; clickData.datasets[0].data=[]; updateDisplay(); saveState(); renderAchievements(); };
+      shopBtn.onclick=()=>{ shopSection.style.display=shopSection.style.display==='none'?'block':'none'; renderShop(); renderCosmetics(); };
+      setInterval(()=>{ const e=Date.now()-startTime; const hrs=String(Math.floor(e/3600000)).padStart(2,'0'); const mins=String(Math.floor((e%3600000)/60000)).padStart(2,'0'); const secs=String(Math.floor((e%60000)/1000)).padStart(2,'0'); timerEl.textContent=`Time on site: ${hrs}:${mins}:${secs}`; checkAchievements(); },1000);
+      themeToggle.onclick=()=>{ const t=body.getAttribute('data-theme')==='light'?'dark':'light'; body.setAttribute('data-theme',t); themeToggle.textContent=t==='light'?'Dark Mode':'Light Mode'; saveState(); };
       saveBtn.onclick=saveState;
       loadBtn.onclick=loadState;
       achBtn.onclick=()=>achievementsDiv.style.display=achievementsDiv.style.display==='none'?'block':'none';
-      godBtn.onclick=()=>{usedGodMode=true;godPanel.style.display=godPanel.style.display==='block'?'none':'block';saveState();};
+      godBtn.onclick=()=>{ usedGodMode=true; godPanel.style.display=godPanel.style.display==='block'?'none':'block'; saveState(); };
       godCancel.onclick=()=>godPanel.style.display='none';
-      godApply.onclick=()=>{const nc=parseInt(godCounter.value),nv=parseInt(godClick.value),nu=JSON.parse(godUpgrades.value);if(Array.isArray(nu)){if(!isNaN(nc))count=nc;if(!isNaN(nv))clickValue=nv;upgrades=nu;renderShop();updateDisplay();godPanel.style.display='none';saveState();}};
-      loadState();renderShop();updateDisplay();renderAchievements();
+      godApply.onclick=()=>{ try{ const nc=parseInt(godCounter.value), nv=parseInt(godClick.value), nu=JSON.parse(godUpgrades.value); if(Array.isArray(nu)){ if(!isNaN(nc))count=nc; if(!isNaN(nv))clickValue=nv; upgrades=nu; renderShop(); updateDisplay(); godPanel.style.display='none'; saveState(); } } catch{} };
+      loadState(); renderShop(); updateDisplay(); renderAchievements(); startAuto();
     });
   </script>
 </body>
 </html>
-
