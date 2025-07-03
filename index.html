@@ -4,176 +4,209 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clicker with Shop</title>
-  <style>
-    :root { --primary: #4a90e2; --secondary: #50e3c2; --bg-gradient: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); --card-bg: #fff; --card-shadow: rgba(0,0,0,0.1); --text-color: #333; }
-    [data-theme="dark"] { --primary: #223344; --secondary: #334455; --bg-gradient: linear-gradient(135deg, #2c3e50 0%, #4c5c6c 100%); --card-bg: #2a2a2a; --card-shadow: rgba(0,0,0,0.5); --text-color: #ddd; }
-    body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:var(--bg-gradient); color:var(--text-color); display:flex; flex-direction:column; align-items:center; }
-    .top-bar { width:100%; display:flex; justify-content:flex-end; gap:1rem; padding:1rem; background:rgba(255,255,255,0.8); }
-    [data-theme="dark"] .top-bar { background:rgba(0,0,0,0.5); }
-    .container { background:var(--card-bg); margin:2rem; padding:2rem; border-radius:12px; box-shadow:0 8px 16px var(--card-shadow); width:90%; max-width:600px; position:relative; }
-    #counter { font-size:5rem; text-align:center; margin-bottom:1rem; display:flex; justify-content:center; align-items:center; gap:1rem; }
-    .controls, .shop-buttons { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:1rem; }
-    .shop-item { flex:1 1 100px; }
-    button { padding:.75rem 1rem; font-size:1rem; border:none; border-radius:8px; background:var(--primary); color:#fff; cursor:pointer; transition:background .2s; }
-    button:hover { background:var(--secondary); }
-    #clickChart { width:100%; margin-top:1rem; }
-    #timer { position:fixed; bottom:1rem; right:1rem; background:rgba(0,0,0,0.6); color:#fff; padding:.5rem 1rem; border-radius:8px; font-family:monospace; }
-    .credits { text-align:center; font-size:.8rem; margin-top:1rem; }
-    #purchase-overlay { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); color:#fff; display:flex; align-items:center; justify-content:center; font-size:3rem; opacity:0; visibility:hidden; transition:opacity .3s; }
-    #purchase-overlay.show { opacity:1; visibility:visible; }
-    .shop { display:none; }
-    .god-panel { display:none; position:absolute; top:1rem; left:1rem; background:var(--card-bg); padding:1rem; border-radius:8px; box-shadow:0 4px 8px var(--card-shadow); }
-    .achievements { display:none; margin-top:1rem; }
-    .achievement { background:var(--secondary); color:#fff; padding:.5rem; margin:.25rem 0; border-radius:4px; opacity:.9; }
-    .mobile-mode .container { max-width:360px; }
-  </style>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { margin:0; padding:0; font-family: 'Roboto', sans-serif; background:#f0f4f8; color:#333; display:flex; flex-direction:column; align-items:center; }
+    [data-theme="dark"] body { background:#121212; color:#fff; }
+    .top-bar { width:100%; max-width:600px; display:flex; justify-content:flex-end; gap:8px; padding:16px; }
+    .top-bar button { padding:8px 12px; border:none; border-radius:6px; background:linear-gradient(135deg,#0066ff,#00ccff); color:#fff; font-weight:600; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition:transform .1s,box-shadow .1s; }
+    .top-bar button:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.3); }
+    .container { background:#fff; margin:16px; padding:24px; border-radius:12px; max-width:600px; width:100%; box-shadow:0 4px 16px rgba(0,0,0,0.1); text-align:center; }
+    [data-theme="dark"] .container { background:#1e1e2e; box-shadow:0 4px 16px rgba(0,0,0,0.5); }
+    #counter { font-size:4rem; margin-bottom:16px; }
+    .controls { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:24px; }
+    .controls button { flex:1 1 120px; padding:16px; border:none; border-radius:8px; background:linear-gradient(135deg,#ff7e5f,#feb47b); color:#fff; font-size:1rem; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:transform .1s,box-shadow .1s; }
+    .controls button:hover { transform:scale(1.05); box-shadow:0 6px 16px rgba(0,0,0,0.3); }
+    .shop { display:none; margin-bottom:24px; }
+    .section { margin-bottom:24px; }
+    .section h3 { margin-bottom:12px; }
+    .shop-buttons, .bg-buttons { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    .shop-item button, .bg-item button { padding:12px; width:100px; border:none; border-radius:6px; color:#fff; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition:transform .1s; }
+    .shop-item button:hover, .bg-item button:hover { transform:translateY(-2px); }
+    .shop-item button { background:linear-gradient(135deg,#34e89e,#0f3443); }
+    .bg-item button:nth-child(1) { background:linear-gradient(135deg,#89f7fe,#66a6ff); }
+    .bg-item button:nth-child(2) { background:linear-gradient(135deg,#ff9a9e,#fad0c4); }
+    .bg-item button:nth-child(3) { background:linear-gradient(135deg,#a18cd1,#fbc2eb); }
+    .bg-item button:nth-child(4) { background:linear-gradient(135deg,#f093fb,#f5576c); }
+    .bg-item button:nth-child(5) { background:linear-gradient(135deg,#30cfd0,#330867); }
+    #settings-btn { position:fixed; top:16px; left:16px; padding:12px; border:none; border-radius:50%; background:linear-gradient(135deg,#8e2de2,#4a00e0); color:#fff; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:transform .1s; }
+    #settings-btn:hover { transform:scale(1.1); }
+    #settings-panel { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.2); width:320px; text-align:left; }
+    [data-theme="dark"] #settings-panel { background:#1e1e2e; box-shadow:0 4px 16px rgba(0,0,0,0.5); }
+    #settings-panel h4 { margin-top:0; margin-bottom:16px; font-size:1.25rem; color:inherit; }
+    #settings-panel label { display:block; margin:8px 0 4px; font-size:.9rem; }
+    #settings-panel select, #settings-panel input[type="checkbox"] { margin-top:4px; }
+    #settings-panel .credits { font-size:.75rem; text-align:center; margin-top:16px; color:#666; }
+    [data-theme="dark"] #settings-panel .credits { color:#aaa; }
+    canvas { max-width:100%; margin-top:24px; border-radius:8px; }
+    #timer { margin-top:16px; font-family:monospace; }
+  </style>
 </head>
 <body>
-  <audio id="click-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-  <audio id="purchase-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <button id="settings-btn">⚙️</button>
+  <div id="settings-panel">
+    <h4>Settings</h4>
+    <label>Font:</label>
+    <select id="font-select">
+      <option value="Roboto, sans-serif">Roboto</option>
+      <option value="Arial, sans-serif">Arial</option>
+      <option value="Courier New, monospace">Courier New</option>
+    </select>
+    <label><input type="checkbox" id="toggle-animations" checked> Animations</label>
+    <div class="credits">Made By Morbitz And Applehat.</div>
+    <button id="settings-close" style="margin-top:16px;padding:12px;width:100%;border:none;border-radius:8px;background:linear-gradient(135deg,#8e2de2,#4a00e0);color:#fff;cursor:pointer;">Close</button>
+  </div>
 
-  <div id="purchase-overlay"></div>
-  <div class="top-bar" data-theme="light">
+  <div class="top-bar">
     <button id="theme-toggle">Dark Mode</button>
-    <button id="ach-btn">Achievements</button>
-    <button id="daily-btn">Daily</button>
-    <button id="prestige-btn">Prestige</button>
-    <button id="save-btn">Save</button>
-    <button id="load-btn">Load</button>
-    <button id="god-btn">God Mode</button>
-    <input type="file" id="load-input" accept="application/json" style="display:none;">
+    <button id="ach-btn">🏆 Achievements</button>
+    <button id="daily-btn">🎁 Daily</button>
+    <button id="prestige-btn">⭐ Prestige</button>
+    <button id="save-btn">💾 Save</button>
+    <button id="load-btn">📂 Load</button>
+    <button id="god-btn">👑 God Mode</button>
+    <input type="file" id="load-input" accept="application/json" style="display:none;" />
   </div>
 
   <div class="container">
-    <div id="counter">0 <button id="mobile-btn">Mobile</button></div>
+    <div id="counter">0</div>
     <div class="controls">
-      <button id="click-btn">Click (+<span id="click-value">1</span>)</button>
-      <button id="auto-btn">Auto-Clicker (cost: <span id="auto-cost">100</span>)</button>
-      <button id="toggle-auto-btn">Pause Auto</button>
-      <button id="reset-btn">Reset</button>
-      <button id="shop-btn">Shop</button>
+      <button id="click-btn">Click +<span id="click-value">1</span></button>
+      <button id="auto-btn">Auto (<span id="auto-cost">100</span>)</button>
+      <button id="toggle-auto-btn">⏸️ Pause</button>
+      <button id="reset-btn">🔄 Reset</button>
+      <button id="shop-btn">🛒 Shop</button>
     </div>
     <div class="shop" id="shop-section">
-      <h3>Shop</h3>
-      <div class="shop-buttons" id="shop-buttons"></div>
-      <h3>Cosmetics</h3>
-      <div class="shop-buttons" id="cosmetics-buttons"></div>
-      <button id="reset-bg-btn">Reset BG</button>
+      <div class="section">
+        <h3>Upgrades</h3>
+        <div class="shop-buttons" id="shop-buttons"></div>
+      </div>
+      <div class="section">
+        <h3>Backgrounds</h3>
+        <div class="bg-buttons" id="bg-buttons"></div>
+      </div>
+      <button id="reset-bg-btn" style="padding:12px;border:none;border-radius:6px;background:linear-gradient(135deg,#ff4e50,#f9d423);color:#fff;cursor:pointer;">Reset BG</button>
     </div>
-    <div class="info-box"><strong>About:</strong> Click to earn coins, buy upgrades, cosmetics, daily bonuses, prestige!</div>
-    <canvas id="clickChart"></canvas>
-    <div class="achievements" id="achievements"></div>
-    <div class="god-panel" id="god-panel">
+    <div class="info-box"><strong>About:</strong> Earn coins by clicking, upgrade, customize bg, save & load.</div>
+    <canvas id="clickChart" width="400" height="200"></canvas>
+    <div class="achievements" id="achievements" style="margin-top:16px;text-align:left;"></div>
+    <div class="god-panel" id="god-panel" style="padding:16px;border-radius:8px;background:linear-gradient(135deg,#ff9966,#ff5e62);color:#fff;display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 4px 16px rgba(0,0,0,0.2);text-align:left;">
       <h4>God Mode</h4>
-      <label>Counter:<input id="god-counter" type="number"></label><br>
-      <label>Click Value:<input id="god-click" type="number"></label><br>
-      <label>Upgrades JSON:<textarea id="god-upgrades" rows="4"></textarea></label><br>
-      <button id="god-apply">Apply</button>
-      <button id="god-cancel">Cancel</button>
+      <label>Counter:<input id="god-counter" type="number" style="margin-left:8px;width:60px;"/></label><br/><br/>
+      <label>Click Value:<input id="god-click" type="number" style="margin-left:8px;width:60px;"/></label><br/><br/>
+      <label>Upgrades JSON:</label><br/>
+      <textarea id="god-upgrades" rows="4" style="width:100%;border:none;border-radius:4px;padding:8px;margin-top:4px;"></textarea><br/><br/>
+      <button id="god-apply" style="padding:12px;border:none;border-radius:6px;background:linear-gradient(135deg,#43cea2,#185a9d);color:#fff;cursor:pointer;">Apply</button>
+      <button id="god-cancel" style="padding:12px;border:none;border-radius:6px;background:linear-gradient(135deg,#f7971e,#ffd200);color:#fff;cursor:pointer;margin-left:8px;">Cancel</button>
     </div>
   </div>
 
   <div id="timer">Time on site: 00:00:00</div>
-  <div class="credits">Made By Morbitz And Applehat.</div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', ()=> {
-      const sessionStart = Date.now();
-      let count = 0, clickValue = 1, autoCount = 0, autoCost = 100, usedGodMode = false, prestigePoints = 0, prestigeMultiplier = 1;
-      const upgrades = [
-        {bonus:2,cost:50},{bonus:5,cost:200},{bonus:10,cost:500},
-        {bonus:20,cost:2000},{bonus:50,cost:5000},{bonus:100,cost:20000},
-        {bonus:1000,cost:100000},{bonus:2000,cost:250000},{bonus:5000,cost:600000},
-        {bonus:10000,cost:1200000},{bonus:20000,cost:2500000},{bonus:50000,cost:6000000},
-        {bonus:100000,cost:12000000},{bonus:200000,cost:25000000},{bonus:500000,cost:60000000},
-        {bonus:1000000,cost:120000000},{bonus:2000000,cost:250000000},{bonus:5000000,cost:600000000},
-        {bonus:10000000,cost:1200000000},{bonus:20000000,cost:2500000000},{bonus:50000000,cost:6000000000},
-        {bonus:100000000,cost:12000000000},{bonus:200000000,cost:25000000000},{bonus:500000000,cost:60000000000}
+    document.addEventListener('DOMContentLoaded',()=>{
+      // Settings
+      const settingsBtn=document.getElementById('settings-btn');
+      const settingsPanel=document.getElementById('settings-panel');
+      const settingsClose=document.getElementById('settings-close');
+      const fontSelect=document.getElementById('font-select');
+      const toggleAni=document.getElementById('toggle-animations');
+      let aniEnabled=toggleAni.checked;
+      settingsBtn.onclick=()=>settingsPanel.style.display='block';
+      settingsClose.onclick=()=>settingsPanel.style.display='none';
+      fontSelect.onchange=()=>document.body.style.fontFamily=fontSelect.value;
+      toggleAni.onchange=()=>aniEnabled=toggleAni.checked;
+
+      // Dark Mode Toggle
+      const themeToggle=document.getElementById('theme-toggle');
+      themeToggle.onclick=()=>{
+        const html=document.documentElement;
+        const current=html.getAttribute('data-theme')||'light';
+        const next=current==='light'?'dark':'light';
+        html.setAttribute('data-theme',next);
+        themeToggle.textContent=next==='light'?'Dark Mode':'Light Mode';
+      };
+
+      // Core Variables
+      const sessionStart=Date.now();
+      let count=0,clickValue=1,autoCount=0,autoCost=100;
+      let prestige=0,multiplier=1,usedGod=false,autoInt=[];
+      const upgrades=Array.from({length:30},(_,i)=>({bonus:(i+1)*2,cost:50*(i+1)*(i+1)}));
+      const bgOptions=[
+        {name:'Blue',style:'linear-gradient(135deg,#89f7fe,#66a6ff)'},
+        {name:'Pink',style:'linear-gradient(135deg,#ff9a9e,#fad0c4)'},
+        {name:'Purple',style:'linear-gradient(135deg,#a18cd1,#fbc2eb)'},
+        {name:'Red',style:'linear-gradient(135deg,#f093fb,#f5576c)'},
+        {name:'Green',style:'linear-gradient(135deg,#30cfd0,#330867)'}
       ];
-      const cosmetics = [
-        {name:'Blue',cost:500,cls:'theme-blue'},{name:'Red',cost:500,cls:'theme-red'},{name:'Green',cost:500,cls:'theme-green'},
-        {name:'Yellow',cost:500,cls:'theme-yellow'},{name:'Purple',cost:500,cls:'theme-purple'},{name:'Orange',cost:500,cls:'theme-orange'},{name:'Pink',cost:500,cls:'theme-pink'}
-      ];
-      const achs = [
+      const achievements=[
         {name:'Addictive',cond:()=>Date.now()-sessionStart>=3600000},
-        {name:'hey stop!',cond:()=>usedGodMode}
-      ];
-      let unlocked = new Set();
-      let autoIntervals = [];
+        {name:'Hey stop!',cond:()=>usedGod}
+      ]; let unlocked=new Set();
 
-      const body = document.documentElement;
-      const overlay = document.getElementById('purchase-overlay');
-      const clickSound = document.getElementById('click-sound');
-      const purchaseSound = document.getElementById('purchase-sound');
-      const themeToggle = document.getElementById('theme-toggle');
-      const achBtn = document.getElementById('ach-btn');
-      const dailyBtn = document.getElementById('daily-btn');
-      const prestigeBtn = document.getElementById('prestige-btn');
-      const saveBtn = document.getElementById('save-btn');
-      const loadBtn = document.getElementById('load-btn');
-      const loadInput = document.getElementById('load-input');
-      const godBtn = document.getElementById('god-btn');
-      const godPanel = document.getElementById('god-panel');
-      const godCounter = document.getElementById('god-counter');
-      const godClick = document.getElementById('god-click');
-      const godUpgrades = document.getElementById('god-upgrades');
-      const godApply = document.getElementById('god-apply');
-      const godCancel = document.getElementById('god-cancel');
-      const counterEl = document.getElementById('counter');
-      const mobileBtn = document.getElementById('mobile-btn');
-      const clickBtn = document.getElementById('click-btn');
-      const autoBtnEl = document.getElementById('auto-btn');
-      const toggleAutoBtn = document.getElementById('toggle-auto-btn');
-      const autoCostEl = document.getElementById('auto-cost');
-      const resetBtnEl = document.getElementById('reset-btn');
-      const shopBtn = document.getElementById('shop-btn');
-      const shopSection = document.getElementById('shop-section');
-      const shopDiv = document.getElementById('shop-buttons');
-      const cosmeticsDiv = document.getElementById('cosmetics-buttons');
-      const resetBgBtn = document.getElementById('reset-bg-btn');
-      const achievementsDiv = document.getElementById('achievements');
-      const timerEl = document.getElementById('timer');
-      clickSound.volume = 0.2; purchaseSound.volume = 0.3;
+      // Element refs
+      const clickBtn=document.getElementById('click-btn');
+      const counterEl=document.getElementById('counter');
+      const autoBtn=document.getElementById('auto-btn');
+      const autoCostEl=document.getElementById('auto-cost');
+      const toggleAutoBtn=document.getElementById('toggle-auto-btn');
+      const resetBtn=document.getElementById('reset-btn');
+      const shopBtn=document.getElementById('shop-btn');
+      const shopSec=document.getElementById('shop-section');
+      const shopDiv=document.getElementById('shop-buttons');
+      const bgDiv=document.getElementById('bg-buttons');
+      const timerEl=document.getElementById('timer');
+      const achBTN=document.getElementById('ach-btn');
+      const dailyBTN=document.getElementById('daily-btn');
+      const prestigeBTN=document.getElementById('prestige-btn');
+      const saveBTN=document.getElementById('save-btn');
+      const loadBTN=document.getElementById('load-btn');
+      const loadInput=document.getElementById('load-input');
+      const achievementsDiv=document.getElementById('achievements');
+      const godBTN=document.getElementById('god-btn');
+      const godPanel=document.getElementById('god-panel');
+      const godCounter=document.getElementById('god-counter');
+      const godClick=document.getElementById('god-click');
+      const godUpgrades=document.getElementById('god-upgrades');
+      const godApply=document.getElementById('god-apply');
+      const godCancel=document.getElementById('god-cancel');
 
-      const clickData = { labels:[], datasets:[{ label:'Coins', data:[], borderColor:'rgb(75,192,192)', fill:false, tension:0.1 }] };
-      const ctx = document.getElementById('clickChart').getContext('2d');
-      const chart = new Chart(ctx,{ type:'line', data:clickData, options:{ scales:{ x:{ title:{ display:true, text:'Clicks'}}, y:{ title:{ display:true, text:'Coins'}}}}});
+      // Chart setup
+      const ctx=document.getElementById('clickChart').getContext('2d');
+      const data={labels:[],datasets:[{label:'Coins',data:[],borderColor:'#0066ff',fill:false}]};
+      const chart=new Chart(ctx,{type:'line',data});
 
-      function showOverlay(msg){ overlay.textContent = msg; overlay.classList.add('show'); setTimeout(()=>overlay.classList.remove('show'),1000); }
-      function renderShop(){ shopDiv.innerHTML=''; upgrades.forEach((u,i)=>{ const b=document.createElement('button'); b.textContent=`+${u.bonus} (${u.cost})`; b.disabled=count<u.cost; b.onclick=()=>{ count-=u.cost; clickValue+=u.bonus; updateDisplay(); purchaseSound.play(); showOverlay(`+${u.bonus}!`); }; const d=document.createElement('div'); d.className='shop-item'; d.appendChild(b); shopDiv.appendChild(d); }); }
-      function renderCosmetics(){ cosmeticsDiv.innerHTML=''; cosmetics.forEach(c=>{ const b=document.createElement('button'); b.textContent=`${c.name} (${c.cost})`; b.disabled=count<c.cost; b.onclick=()=>{ count-=c.cost; body.classList.remove('theme-blue','theme-red','theme-green','theme-yellow','theme-purple','theme-orange','theme-pink'); body.classList.add(c.cls); updateDisplay(); purchaseSound.play(); showOverlay(c.name); }; const d=document.createElement('div'); d.className='shop-item'; d.appendChild(b); cosmeticsDiv.appendChild(d); }); }
-      resetBgBtn.onclick=()=>{ body.classList.remove('theme-blue','theme-red','theme-green','theme-yellow','theme-purple','theme-orange','theme-pink'); };
-      function checkAchievements(){ achs.forEach(a=>{ if(a.cond() && !unlocked.has(a.name)){ unlocked.add(a.name); const el=document.createElement('div'); el.className='achievement'; el.textContent=a.name; achievementsDiv.appendChild(el); showOverlay(a.name); } }); }
-      function updateDisplay(){ counterEl.firstChild.textContent = count * prestigeMultiplier; document.getElementById('click-value').textContent = clickValue * prestigeMultiplier; document.querySelectorAll('.shop-item button').forEach((b,i)=>b.disabled = count < upgrades[i].cost); autoCount>=1?autoCostEl.textContent = autoCost:null; chart.update(); checkAchievements(); }
+      // Helpers
+      function renderShop(){shopDiv.innerHTML='';upgrades.forEach(u=>{const b=document.createElement('button');b.textContent=`+${u.bonus} (${u.cost})`;b.disabled=count<u.cost;b.onclick=()=>{count-=u.cost;clickValue+=u.bonus;update();};shopDiv.appendChild(b);});}
+      function renderBG(){bgDiv.innerHTML='';bgOptions.forEach(bopt=>{const b=document.createElement('button');b.textContent=bopt.name;b.onclick=()=>{document.body.style.background=bopt.style;};bgDiv.appendChild(b);});}
+      function update(){counterEl.textContent=count*multiplier;autoCostEl.textContent=autoCost;toggleAutoBtn.textContent=autoInt.length?"▶":"⏸️";chart.update();checkAchievements();}
+      function startAuto(){clearAuto();for(let i=0;i<autoCount;i++)autoInt.push(setInterval(()=>{count+=clickValue*multiplier;data.labels.push(data.labels.length+1);data.datasets[0].data.push(count);update();},1000));}
+      function clearAuto(){autoInt.forEach(i=>clearInterval(i));autoInt=[];}
+      function checkAchievements(){achievements.forEach(a=>{if(a.cond()&&!unlocked.has(a.name)){unlocked.add(a.name);const el=document.createElement('div');el.textContent=a.name;el.style.margin='4px 0';achievementsDiv.appendChild(el);}});}
 
-      clickBtn.addEventListener('click', ()=>{ count += clickValue * prestigeMultiplier; clickData.labels.push(clickData.labels.length+1); clickData.datasets[0].data.push(count); updateDisplay(); clickSound.play(); });
-      resetBtnEl.addEventListener('click', ()=>{ count=0; clickValue=1; clickData.labels=[]; clickData.datasets[0].data=[]; updateDisplay(); });
+      // Handlers
+      clickBtn.onclick=()=>{count+=clickValue*multiplier;data.labels.push(data.labels.length+1);data.datasets[0].data.push(count);update();};
+      autoBtn.onclick=()=>{if(count>=autoCost){count-=autoCost;autoCount++;autoCost=Math.floor(autoCost*1.5);renderShop();update();startAuto();}};
+      toggleAutoBtn.onclick=()=>autoInt.length?clearAuto():startAuto();
+      resetBtn.onclick=()=>{count=0;clickValue=1;autoCount=0;autoCost=100;renderShop();update();clearAuto();data.labels=[];data.datasets[0].data=[];};
+      shopBtn.onclick=()=>{shopSec.style.display=shopSec.style.display==='none'?'block':'none';renderShop();renderBG();};
+      achBTN.onclick=()=>achievementsDiv.style.display=achievementsDiv.style.display==='none'?'block':'none';
+      dailyBTN.onclick=()=>{const today=new Date().toISOString().split('T')[0];const last=localStorage.getItem('lastDaily');if(last!==today){count+=1000*multiplier;localStorage.setItem('lastDaily',today);update();alert('Daily bonus!');}else alert('Already claimed today');};
+      prestigeBTN.onclick=()=>{if(count>=100000){prestige++;multiplier=1+0.1*prestige;count=0;clickValue=1;autoCount=0;autoCost=100;renderShop();update();clearAuto();data.labels=[];data.datasets[0].data=[];alert('Prestiged!');}else alert('Need 100,000 coins');};
+      saveBTN.onclick=()=>{localStorage.setItem('clickerSave',JSON.stringify({count,clickValue,autoCount,autoCost,prestige,multiplier,unlocked:Array.from(unlocked)}));alert('Game Saved');};
+      loadBTN.onclick=()=>loadInput.click();
+      loadInput.onchange=e=>{const fr=new FileReader();fr.onload=()=>{const f=JSON.parse(fr.result);count=f.count||0;clickValue=f.clickValue||1;autoCount=f.autoCount||0;autoCost=f.autoCost||100;prestige=f.prestige||0;multiplier=f.multiplier||1;unlocked=new Set(f.unlocked||[]);renderShop();achievementsDiv.innerHTML='';f.unlocked.forEach(name=>{const el=document.createElement('div');el.textContent=name;el.style.margin='4px 0';achievementsDiv.appendChild(el);} );update();};fr.readAsText(e.target.files[0]);};
+      godBTN.onclick=()=>godPanel.style.display=godPanel.style.display==='block'?'none':'block';
+      godCancel.onclick=()=>godPanel.style.display='none';
+      godApply.onclick=()=>{count=parseInt(godCounter.value)||count;clickValue=parseInt(godClick.value)||clickValue;try{const arr=JSON.parse(godUpgrades.value);if(Array.isArray(arr))arr.forEach((u,i)=>upgrades[i]=u);}catch{}renderShop();update();godPanel.style.display='none';usedGod=true;};
 
-      shopBtn.addEventListener('click', ()=>{ shopSection.style.display = shopSection.style.display==='none'?'block':'none'; renderShop(); renderCosmetics(); });
-      themeToggle.addEventListener('click', ()=>{ const t = body.getAttribute('data-theme')==='light'?'dark':'light'; body.setAttribute('data-theme',t); themeToggle.textContent = t==='light'?'Dark Mode':'Light Mode'; });
-      achBtn.addEventListener('click', ()=> achievementsDiv.style.display = achievementsDiv.style.display==='none'?'block':'none');
-      dailyBtn.addEventListener('click', ()=>{ count += 1000 * prestigeMultiplier; updateDisplay(); purchaseSound.play(); showOverlay('Daily Bonus!'); });
-      prestigeBtn.addEventListener('click', ()=>{ if(count>=100000){ prestigePoints++; prestigeMultiplier = 1 + 0.1*prestigePoints; count=0; clickValue=1; autoCount=0; autoCost=100; clearAuto(); clickData.labels=[]; clickData.datasets[0].data=[]; updateDisplay(); showOverlay('Prestiged!'); } else showOverlay('Need 100k'); });
+      // Timer
+      setInterval(()=>{const d=Date.now();const h=('0'+Math.floor((d%86400000)/3600000)).slice(-2);const m=('0'+Math.floor((d%3600000)/60000)).slice(-2);const s=('0'+Math.floor((d%60000)/1000)).slice(-2);timerEl.textContent=`Time on site: ${h}:${m}:${s}`;},1000);
 
-      saveBtn.addEventListener('click', ()=>{ localStorage.setItem('save', JSON.stringify({ count, clickValue, autoCount, autoCost, prestigePoints, prestigeMultiplier, achievements: Array.from(unlocked), theme: body.className })); showOverlay('Saved!'); });
-      loadBtn.addEventListener('click', ()=>{ const f = JSON.parse(localStorage.getItem('save')||'{}'); if(f.count!=null){ count=f.count; clickValue=f.clickValue; autoCount=f.autoCount; autoCost=f.autoCost; prestigePoints=f.prestigePoints; prestigeMultiplier=f.prestigeMultiplier; unlocked = new Set(f.achievements||[]); body.className = f.theme||''; } updateDisplay(); showOverlay('Loaded!'); });
-      loadInput.addEventListener('change', e=>{});
-
-      godBtn.addEventListener('click', ()=> godPanel.style.display = godPanel.style.display==='block'?'none':'block');
-      godCancel.addEventListener('click', ()=> godPanel.style.display='none');
-      godApply.addEventListener('click', ()=> { count = parseInt(godCounter.value)||count; clickValue = parseInt(godClick.value)||clickValue; try{ const u = JSON.parse(godUpgrades.value); if(Array.isArray(u)) upgrades.splice(0, upgrades.length, ...u); } catch{} updateDisplay(); godPanel.style.display='none'; usedGodMode=true; showOverlay('God Mode!'); });
-
-      mobileBtn.addEventListener('click', ()=> body.classList.toggle('mobile-mode'));
-
-      function startAuto(){ clearAuto(); for(let i=0;i<autoCount;i++){ autoIntervals.push(setInterval(()=>{ count += clickValue * prestigeMultiplier; updateDisplay(); clickSound.play(); }, 1000)); }}
-      function clearAuto(){ autoIntervals.forEach(id=>clearInterval(id)); autoIntervals = []; }
-      autoBtnEl.addEventListener('click', ()=>{ if(count>=autoCost){ count -= autoCost; autoCount++; autoCost = Math.floor(autoCost*1.5); autoCostEl.textContent = autoCost; startAuto(); updateDisplay(); purchaseSound.play(); showOverlay('Auto Clicker!'); } });
-      toggleAutoBtn.addEventListener('click', ()=>{ if(autoIntervals.length){ clearAuto(); toggleAutoBtn.textContent='Resume Auto'; } else { startAuto(); toggleAutoBtn.textContent='Pause Auto'; } });
-
-      setInterval(()=>{ const e = Date.now() - sessionStart; const h = String(Math.floor(e/3600000)).padStart(2,'0'); const m = String(Math.floor((e%3600000)/60000)).padStart(2,'0'); const s = String(Math.floor((e%60000)/1000)).padStart(2,'0'); timerEl.textContent = `Time on site: ${h}:${m}:${s}`; }, 1000);
-
-      renderShop(); updateDisplay(); startAuto();
+      // Init
+      renderShop();renderBG();update();
     });
   </script>
 </body>
