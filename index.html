@@ -4,62 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clicker with Shop</title>
-  <!-- Chart.js -->
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;400;700&family=Open+Sans:wght@300;400;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;700&family=Oswald:wght@200;400;700&family=Merriweather:wght@300;400;700&family=Ubuntu:wght@300;400;700&family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@300;400;700&family=Raleway:wght@300;400;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { margin:0; padding:0; font-family: 'Roboto', sans-serif; background:#f0f4f8; color:#333; display:flex; flex-direction:column; align-items:center; }
-    [data-theme="dark"] body { background:#121212; color:#fff; }
+    :root { --primary:#0066ff; --secondary:#00ccff; --accent:#ff7e5f; --box-gradient:linear-gradient(135deg,#fff,#e6e6e6); --shop-gradient:linear-gradient(135deg,#34e89e,#0f3443); --bg:#f0f4f8; --text:#333; --font-family:'Roboto',sans-serif; }
+    [data-theme="dark"] { --box-gradient:linear-gradient(135deg,#2a2a2a,#3a3a3a); --bg:#121212; --text:#fff; }
+    body { margin:0; padding:0; font-family:var(--font-family); background:var(--bg); color:var(--text); display:flex; flex-direction:column; align-items:center; }
+    .no-animations * { transition:none!important; }
     .top-bar { width:100%; max-width:600px; display:flex; justify-content:flex-end; gap:8px; padding:16px; }
-    .top-bar button { padding:8px 12px; border:none; border-radius:6px; background:linear-gradient(135deg,#0066ff,#00ccff); color:#fff; font-weight:600; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition:transform .1s,box-shadow .1s; }
-    .top-bar button:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.3); }
-    .container { background:#fff; margin:16px; padding:24px; border-radius:12px; max-width:600px; width:100%; box-shadow:0 4px 16px rgba(0,0,0,0.1); text-align:center; }
-    [data-theme="dark"] .container { background:#1e1e2e; box-shadow:0 4px 16px rgba(0,0,0,0.5); }
-    #counter { font-size:4rem; margin-bottom:16px; }
-    .controls { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:24px; }
-    .controls button { flex:1 1 120px; padding:16px; border:none; border-radius:8px; background:linear-gradient(135deg,#ff7e5f,#feb47b); color:#fff; font-size:1rem; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:transform .1s,box-shadow .1s; }
-    .controls button:hover { transform:scale(1.05); box-shadow:0 6px 16px rgba(0,0,0,0.3); }
-    .shop { display:none; margin-bottom:24px; }
-    .section { margin-bottom:24px; }
-    .section h3 { margin-bottom:12px; }
-    .shop-buttons, .bg-buttons { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
-    .shop-item button, .bg-item button { padding:12px; width:100px; border:none; border-radius:6px; color:#fff; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition:transform .1s; }
-    .shop-item button:hover, .bg-item button:hover { transform:translateY(-2px); }
-    .shop-item button { background:linear-gradient(135deg,#34e89e,#0f3443); }
-    .bg-item button:nth-child(1) { background:linear-gradient(135deg,#89f7fe,#66a6ff); }
-    .bg-item button:nth-child(2) { background:linear-gradient(135deg,#ff9a9e,#fad0c4); }
-    .bg-item button:nth-child(3) { background:linear-gradient(135deg,#a18cd1,#fbc2eb); }
-    .bg-item button:nth-child(4) { background:linear-gradient(135deg,#f093fb,#f5576c); }
-    .bg-item button:nth-child(5) { background:linear-gradient(135deg,#30cfd0,#330867); }
-    #settings-btn { position:fixed; top:16px; left:16px; padding:12px; border:none; border-radius:50%; background:linear-gradient(135deg,#8e2de2,#4a00e0); color:#fff; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:transform .1s; }
-    #settings-btn:hover { transform:scale(1.1); }
-    #settings-panel { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.2); width:320px; text-align:left; }
-    [data-theme="dark"] #settings-panel { background:#1e1e2e; box-shadow:0 4px 16px rgba(0,0,0,0.5); }
-    #settings-panel h4 { margin-top:0; margin-bottom:16px; font-size:1.25rem; color:inherit; }
-    #settings-panel label { display:block; margin:8px 0 4px; font-size:.9rem; }
-    #settings-panel select, #settings-panel input[type="checkbox"] { margin-top:4px; }
-    #settings-panel .credits { font-size:.75rem; text-align:center; margin-top:16px; color:#666; }
-    [data-theme="dark"] #settings-panel .credits { color:#aaa; }
-    canvas { max-width:100%; margin-top:24px; border-radius:8px; }
-    #timer { margin-top:16px; font-family:monospace; }
+    .top-bar button { padding:8px 12px; border:none; border-radius:6px; background:var(--primary); color:#fff; cursor:pointer; transition:background .3s,transform .2s; }
+    .top-bar button:hover{ background:var(--secondary); transform:translateY(-2px); }
+    #settings-btn{ position:fixed; top:16px; left:16px; width:40px; height:40px; border:none; border-radius:50%; background:var(--accent); color:#fff; font-size:1.2rem; cursor:pointer; }
+    #settings-panel{ display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--box-gradient); padding:24px; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.2); }
+    #settings-panel label{ display:block; margin:8px 0; }
+    #settings-panel select, #settings-panel input{ margin-right:8px; }
+    #settings-panel button{ margin-top:16px; padding:8px 12px; border:none; border-radius:6px; background:var(--primary); color:#fff; cursor:pointer; }
+    .container{ background:var(--box-gradient); margin:16px; padding:24px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; width:90%; max-width:600px; }
+    [data-theme="dark"] .container{ background:#333; }
+    #counter{ font-size:5rem; margin-bottom:16px; }
+    .controls{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
+    .controls button{ padding:12px 16px; border:none; border-radius:6px; background:var(--accent); color:#fff; cursor:pointer; transition:transform .2s; }
+    .controls button:hover{ transform:scale(1.05); }
+    .shop{ display:none; margin-bottom:16px; }
+    .section{ margin-bottom:16px; }
+    .shop-buttons{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .shop-item button{ padding:8px; width:100px; border:none; border-radius:4px; background:var(--shop-gradient); color:#fff; cursor:pointer; transition:transform .2s; }
+    .shop-item button:hover{ transform:translateY(-2px); }
+    .bg-item button{ padding:8px; width:100px; border:none; border-radius:4px; background:var(--secondary); color:#fff; cursor:pointer; transition:transform .2s; }
+    .bg-item button:hover{ transform:translateY(-2px); }
+    #timer{ margin-top:16px; font-family:monospace; }
+    .achievements{ display:none; margin-top:16px; max-width:600px; text-align:left; }
   </style>
 </head>
 <body>
   <button id="settings-btn">⚙️</button>
   <div id="settings-panel">
-    <h4>Settings</h4>
-    <label>Font:</label>
-    <select id="font-select">
-      <option value="Roboto, sans-serif">Roboto</option>
-      <option value="Arial, sans-serif">Arial</option>
-      <option value="Courier New, monospace">Courier New</option>
-    </select>
+    <h3>Settings</h3>
+    <label>Font Family:
+      <select id="font-select">
+        <option value="'Roboto',sans-serif">Roboto</option>
+        <option value="'Open Sans',sans-serif">Open Sans</option>
+        <option value="'Lato',sans-serif">Lato</option>
+        <option value="'Montserrat',sans-serif">Montserrat</option>
+        <option value="'Oswald',sans-serif">Oswald</option>
+        <option value="'Merriweather',serif">Merriweather</option>
+        <option value="'Ubuntu',sans-serif">Ubuntu</option>
+        <option value="'Playfair Display',serif">Playfair Display</option>
+        <option value="'Source Sans Pro',sans-serif">Source Sans Pro</option>
+        <option value="'Raleway',sans-serif">Raleway</option>
+      </select>
+    </label>
     <label><input type="checkbox" id="toggle-animations" checked> Animations</label>
-    <div class="credits">Made By Morbitz And Applehat.</div>
-    <button id="settings-close" style="margin-top:16px;padding:12px;width:100%;border:none;border-radius:8px;background:linear-gradient(135deg,#8e2de2,#4a00e0);color:#fff;cursor:pointer;">Close</button>
+    <label><input type="checkbox" id="toggle-darkmode"> Dark Mode</label>
+    <button id="settings-close">Close</button>
   </div>
-
   <div class="top-bar">
-    <button id="theme-toggle">Dark Mode</button>
+    <button id="shop-btn">🛒 Shop</button>
     <button id="ach-btn">🏆 Achievements</button>
     <button id="daily-btn">🎁 Daily</button>
     <button id="prestige-btn">⭐ Prestige</button>
@@ -68,15 +69,12 @@
     <button id="god-btn">👑 God Mode</button>
     <input type="file" id="load-input" accept="application/json" style="display:none;" />
   </div>
-
   <div class="container">
     <div id="counter">0</div>
     <div class="controls">
       <button id="click-btn">Click +<span id="click-value">1</span></button>
       <button id="auto-btn">Auto (<span id="auto-cost">100</span>)</button>
-      <button id="toggle-auto-btn">⏸️ Pause</button>
-      <button id="reset-btn">🔄 Reset</button>
-      <button id="shop-btn">🛒 Shop</button>
+      <button id="reset-btn">Reset</button>
     </div>
     <div class="shop" id="shop-section">
       <div class="section">
@@ -84,129 +82,78 @@
         <div class="shop-buttons" id="shop-buttons"></div>
       </div>
       <div class="section">
-        <h3>Backgrounds</h3>
-        <div class="bg-buttons" id="bg-buttons"></div>
+        <h3>Cosmetics</h3>
+        <div class="shop-buttons" id="cosmetics-buttons"></div>
       </div>
-      <button id="reset-bg-btn" style="padding:12px;border:none;border-radius:6px;background:linear-gradient(135deg,#ff4e50,#f9d423);color:#fff;cursor:pointer;">Reset BG</button>
     </div>
-    <div class="info-box"><strong>About:</strong> Earn coins by clicking, upgrade, customize bg, save & load.</div>
     <canvas id="clickChart" width="400" height="200"></canvas>
-    <div class="achievements" id="achievements" style="margin-top:16px;text-align:left;"></div>
-    <div class="god-panel" id="god-panel" style="padding:16px;border-radius:8px;background:linear-gradient(135deg,#ff9966,#ff5e62);color:#fff;display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 4px 16px rgba(0,0,0,0.2);text-align:left;">
-      <h4>God Mode</h4>
-      <label>Counter:<input id="god-counter" type="number" style="margin-left:8px;width:60px;"/></label><br/><br/>
-      <label>Click Value:<input id="god-click" type="number" style="margin-left:8px;width:60px;"/></label><br/><br/>
-      <label>Upgrades JSON:</label><br/>
-      <textarea id="god-upgrades" rows="4" style="width:100%;border:none;border-radius:4px;padding:8px;margin-top:4px;"></textarea><br/><br/>
-      <button id="god-apply" style="padding:12px;border:none;border-radius:6px;background:linear-gradient(135deg,#43cea2,#185a9d);color:#fff;cursor:pointer;">Apply</button>
-      <button id="god-cancel" style="padding:12px;border:none;border-radius:6px;background:linear-gradient(135deg,#f7971e,#ffd200);color:#fff;cursor:pointer;margin-left:8px;">Cancel</button>
-    </div>
+    <div id="timer">Time playing: 00:00:00</div>
+    <div class="achievements" id="achievements"></div>
   </div>
-
-  <div id="timer">Time on site: 00:00:00</div>
-
   <script>
     document.addEventListener('DOMContentLoaded',()=>{
-      // Settings
+      const startTime=Date.now();
+      const body=document.body;
       const settingsBtn=document.getElementById('settings-btn');
       const settingsPanel=document.getElementById('settings-panel');
       const settingsClose=document.getElementById('settings-close');
+      const toggleAnimations=document.getElementById('toggle-animations');
+      const toggleDark=document.getElementById('toggle-darkmode');
       const fontSelect=document.getElementById('font-select');
-      const toggleAni=document.getElementById('toggle-animations');
-      let aniEnabled=toggleAni.checked;
-      settingsBtn.onclick=()=>settingsPanel.style.display='block';
-      settingsClose.onclick=()=>settingsPanel.style.display='none';
-      fontSelect.onchange=()=>document.body.style.fontFamily=fontSelect.value;
-      toggleAni.onchange=()=>aniEnabled=toggleAni.checked;
-
-      // Dark Mode Toggle
-      const themeToggle=document.getElementById('theme-toggle');
-      themeToggle.onclick=()=>{
-        const html=document.documentElement;
-        const current=html.getAttribute('data-theme')||'light';
-        const next=current==='light'?'dark':'light';
-        html.setAttribute('data-theme',next);
-        themeToggle.textContent=next==='light'?'Dark Mode':'Light Mode';
-      };
-
-      // Core Variables
-      const sessionStart=Date.now();
-      let count=0,clickValue=1,autoCount=0,autoCost=100;
-      let prestige=0,multiplier=1,usedGod=false,autoInt=[];
-      const upgrades=Array.from({length:30},(_,i)=>({bonus:(i+1)*2,cost:50*(i+1)*(i+1)}));
-      const bgOptions=[
-        {name:'Blue',style:'linear-gradient(135deg,#89f7fe,#66a6ff)'},
-        {name:'Pink',style:'linear-gradient(135deg,#ff9a9e,#fad0c4)'},
-        {name:'Purple',style:'linear-gradient(135deg,#a18cd1,#fbc2eb)'},
-        {name:'Red',style:'linear-gradient(135deg,#f093fb,#f5576c)'},
-        {name:'Green',style:'linear-gradient(135deg,#30cfd0,#330867)'}
-      ];
-      const achievements=[
-        {name:'Addictive',cond:()=>Date.now()-sessionStart>=3600000},
-        {name:'Hey stop!',cond:()=>usedGod}
-      ]; let unlocked=new Set();
-
-      // Element refs
-      const clickBtn=document.getElementById('click-btn');
-      const counterEl=document.getElementById('counter');
-      const autoBtn=document.getElementById('auto-btn');
-      const autoCostEl=document.getElementById('auto-cost');
-      const toggleAutoBtn=document.getElementById('toggle-auto-btn');
-      const resetBtn=document.getElementById('reset-btn');
       const shopBtn=document.getElementById('shop-btn');
-      const shopSec=document.getElementById('shop-section');
-      const shopDiv=document.getElementById('shop-buttons');
-      const bgDiv=document.getElementById('bg-buttons');
-      const timerEl=document.getElementById('timer');
-      const achBTN=document.getElementById('ach-btn');
-      const dailyBTN=document.getElementById('daily-btn');
-      const prestigeBTN=document.getElementById('prestige-btn');
-      const saveBTN=document.getElementById('save-btn');
-      const loadBTN=document.getElementById('load-btn');
+      const achBtn=document.getElementById('ach-btn');
+      const dailyBtn=document.getElementById('daily-btn');
+      const prestigeBtn=document.getElementById('prestige-btn');
+      const saveBtn=document.getElementById('save-btn');
+      const loadBtn=document.getElementById('load-btn');
       const loadInput=document.getElementById('load-input');
+      const godBtn=document.getElementById('god-btn');
+      const clickBtn=document.getElementById('click-btn');
+      const autoBtn=document.getElementById('auto-btn');
+      const resetBtn=document.getElementById('reset-btn');
+      const counterEl=document.getElementById('counter');
+      const clickValueEl=document.getElementById('click-value');
+      const autoCostEl=document.getElementById('auto-cost');
+      const shopSection=document.getElementById('shop-section');
+      const shopButtons=document.getElementById('shop-buttons');
+      const cosmeticsButtons=document.getElementById('cosmetics-buttons');
+      const timerEl=document.getElementById('timer');
       const achievementsDiv=document.getElementById('achievements');
-      const godBTN=document.getElementById('god-btn');
-      const godPanel=document.getElementById('god-panel');
-      const godCounter=document.getElementById('god-counter');
-      const godClick=document.getElementById('god-click');
-      const godUpgrades=document.getElementById('god-upgrades');
-      const godApply=document.getElementById('god-apply');
-      const godCancel=document.getElementById('god-cancel');
-
-      // Chart setup
       const ctx=document.getElementById('clickChart').getContext('2d');
-      const data={labels:[],datasets:[{label:'Coins',data:[],borderColor:'#0066ff',fill:false}]};
-      const chart=new Chart(ctx,{type:'line',data});
-
-      // Helpers
-      function renderShop(){shopDiv.innerHTML='';upgrades.forEach(u=>{const b=document.createElement('button');b.textContent=`+${u.bonus} (${u.cost})`;b.disabled=count<u.cost;b.onclick=()=>{count-=u.cost;clickValue+=u.bonus;update();};shopDiv.appendChild(b);});}
-      function renderBG(){bgDiv.innerHTML='';bgOptions.forEach(bopt=>{const b=document.createElement('button');b.textContent=bopt.name;b.onclick=()=>{document.body.style.background=bopt.style;};bgDiv.appendChild(b);});}
-      function update(){counterEl.textContent=count*multiplier;autoCostEl.textContent=autoCost;toggleAutoBtn.textContent=autoInt.length?"▶":"⏸️";chart.update();checkAchievements();}
-      function startAuto(){clearAuto();for(let i=0;i<autoCount;i++)autoInt.push(setInterval(()=>{count+=clickValue*multiplier;data.labels.push(data.labels.length+1);data.datasets[0].data.push(count);update();},1000));}
-      function clearAuto(){autoInt.forEach(i=>clearInterval(i));autoInt=[];}
-      function checkAchievements(){achievements.forEach(a=>{if(a.cond()&&!unlocked.has(a.name)){unlocked.add(a.name);const el=document.createElement('div');el.textContent=a.name;el.style.margin='4px 0';achievementsDiv.appendChild(el);}});}
-
-      // Handlers
-      clickBtn.onclick=()=>{count+=clickValue*multiplier;data.labels.push(data.labels.length+1);data.datasets[0].data.push(count);update();};
-      autoBtn.onclick=()=>{if(count>=autoCost){count-=autoCost;autoCount++;autoCost=Math.floor(autoCost*1.5);renderShop();update();startAuto();}};
-      toggleAutoBtn.onclick=()=>autoInt.length?clearAuto():startAuto();
-      resetBtn.onclick=()=>{count=0;clickValue=1;autoCount=0;autoCost=100;renderShop();update();clearAuto();data.labels=[];data.datasets[0].data=[];};
-      shopBtn.onclick=()=>{shopSec.style.display=shopSec.style.display==='none'?'block':'none';renderShop();renderBG();};
-      achBTN.onclick=()=>achievementsDiv.style.display=achievementsDiv.style.display==='none'?'block':'none';
-      dailyBTN.onclick=()=>{const today=new Date().toISOString().split('T')[0];const last=localStorage.getItem('lastDaily');if(last!==today){count+=1000*multiplier;localStorage.setItem('lastDaily',today);update();alert('Daily bonus!');}else alert('Already claimed today');};
-      prestigeBTN.onclick=()=>{if(count>=100000){prestige++;multiplier=1+0.1*prestige;count=0;clickValue=1;autoCount=0;autoCost=100;renderShop();update();clearAuto();data.labels=[];data.datasets[0].data=[];alert('Prestiged!');}else alert('Need 100,000 coins');};
-      saveBTN.onclick=()=>{localStorage.setItem('clickerSave',JSON.stringify({count,clickValue,autoCount,autoCost,prestige,multiplier,unlocked:Array.from(unlocked)}));alert('Game Saved');};
-      loadBTN.onclick=()=>loadInput.click();
-      loadInput.onchange=e=>{const fr=new FileReader();fr.onload=()=>{const f=JSON.parse(fr.result);count=f.count||0;clickValue=f.clickValue||1;autoCount=f.autoCount||0;autoCost=f.autoCost||100;prestige=f.prestige||0;multiplier=f.multiplier||1;unlocked=new Set(f.unlocked||[]);renderShop();achievementsDiv.innerHTML='';f.unlocked.forEach(name=>{const el=document.createElement('div');el.textContent=name;el.style.margin='4px 0';achievementsDiv.appendChild(el);} );update();};fr.readAsText(e.target.files[0]);};
-      godBTN.onclick=()=>godPanel.style.display=godPanel.style.display==='block'?'none':'block';
-      godCancel.onclick=()=>godPanel.style.display='none';
-      godApply.onclick=()=>{count=parseInt(godCounter.value)||count;clickValue=parseInt(godClick.value)||clickValue;try{const arr=JSON.parse(godUpgrades.value);if(Array.isArray(arr))arr.forEach((u,i)=>upgrades[i]=u);}catch{}renderShop();update();godPanel.style.display='none';usedGod=true;};
-
-      // Timer
-      setInterval(()=>{const d=Date.now();const h=('0'+Math.floor((d%86400000)/3600000)).slice(-2);const m=('0'+Math.floor((d%3600000)/60000)).slice(-2);const s=('0'+Math.floor((d%60000)/1000)).slice(-2);timerEl.textContent=`Time on site: ${h}:${m}:${s}`;},1000);
-
-      // Init
-      renderShop();renderBG();update();
+      const chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:'Coins',data:[],borderColor:'blue',fill:false}]}});
+      let count=0,clickValue=1,autoCount=0,autoCost=100,usedGod=false,cosmeticUses=0;
+      let prestigeCount=0,multiplier=1;
+      const upgrades=Array.from({length:30},(_,i)=>({bonus:(i+1)*2,cost:50*(i+1)*(i+1)}));
+      const cosmetics=[{name:'Blue',cost:500,style:'linear-gradient(135deg,#89f7fe,#66a6ff)'},{name:'Pink',cost:500,style:'linear-gradient(135deg,#ff9a9e,#fad0c4)'},{name:'Purple',cost:500,style:'linear-gradient(135deg,#a18cd1,#fbc2eb)'},{name:'Red',cost:500,style:'linear-gradient(135deg,#f093fb,#f5576c)'},{name:'Green',cost:500,style:'linear-gradient(135deg,#30cfd0,#330867)'}];
+      const achievementsList=[
+        {name:'Addictive',cond:()=>Date.now()-startTime>=3600000},
+        {name:'Hey stop!',cond:()=>usedGod},
+        {name:'Click Star',cond:()=>count>=1000},
+        {name:'Auto Master',cond:()=>autoCount>=10},
+        {name:'Cosmo Fan',cond:()=>cosmeticUses>=5}
+      ];
+      let unlocked=new Set();
+      function update(){counterEl.textContent=count;clickValueEl.textContent=clickValue*multiplier;autoCostEl.textContent=autoCost;chart.update();checkAchievements();}
+      function checkAchievements(){achievementsList.forEach(a=>{if(a.cond()&&!unlocked.has(a.name)){unlocked.add(a.name);const d=document.createElement('div');d.textContent=a.name;achievementsDiv.appendChild(d);}});}
+      function renderShop(){shopButtons.innerHTML='';upgrades.forEach(u=>{const b=document.createElement('button');b.textContent=`+${u.bonus} (${u.cost})`;b.onclick=()=>{if(count>=u.cost){count-=u.cost;clickValue+=u.bonus;update();}};shopButtons.appendChild(b);});}
+      function renderCosmetics(){cosmeticsButtons.innerHTML='';cosmetics.forEach(c=>{const b=document.createElement('button');b.textContent=`${c.name} (${c.cost})`;b.onclick=()=>{if(count>=c.cost){count-=c.cost;body.style.background=c.style;cosmeticUses++;update();}};cosmeticsButtons.appendChild(b);});}
+      clickBtn.onclick=()=>{count+=clickValue*multiplier;chart.data.labels.push(chart.data.labels.length+1);chart.data.datasets[0].data.push(count);update();};
+      autoBtn.onclick=()=>{if(count>=autoCost){count-=autoCost;autoCount++;autoCost=Math.floor(autoCost*1.5);renderShop();update();}};
+      resetBtn.onclick=()=>{count=0;clickValue=1;autoCount=0;autoCost=100;renderShop();renderCosmetics();update();chart.data.labels.length=0;chart.data.datasets[0].data.length=0;chart.update();};
+      shopBtn.onclick=()=>{shopSection.style.display=shopSection.style.display==='none'?'block':'none';renderShop();renderCosmetics();};
+      settingsBtn.onclick=()=>settingsPanel.style.display='block';settingsClose.onclick=()=>settingsPanel.style.display='none';
+      toggleAnimations.onchange=()=>body.classList.toggle('no-animations',!toggleAnimations.checked);
+      toggleDark.onchange=()=>document.documentElement.setAttribute('data-theme',toggleDark.checked?'dark':'light');
+      fontSelect.onchange=()=>document.documentElement.style.setProperty('--font-family',fontSelect.value);
+      achBtn.onclick=()=>achievementsDiv.style.display=achievementsDiv.style.display==='none'?'block':'none';
+      dailyBtn.onclick=()=>{count+=100;update();};
+      prestigeBtn.onclick=()=>{const threshold=1000;if(count>=threshold){prestigeCount++;multiplier=1+prestigeCount*0.1;count=0;clickValue=1;update();alert(`Prestiged! Rank ${prestigeCount}`);}else alert(`Need ${threshold} coins`);};
+      saveBtn.onclick=()=>{localStorage.setItem('save',JSON.stringify({count,clickValue,autoCount,autoCost,prestigeCount,multiplier,usedGod,cosmeticUses,unlocked:Array.from(unlocked)}));alert('Saved');};
+      loadBtn.onclick=()=>loadInput.click();loadInput.onchange=e=>{const fr=new FileReader();fr.onload=()=>{const f=JSON.parse(fr.result);count=f.count||0;clickValue=f.clickValue||1;autoCount=f.autoCount||0;autoCost=f.autoCost||100;prestigeCount=f.prestigeCount||0;multiplier=f.multiplier||1;usedGod=f.usedGod||false;cosmeticUses=f.cosmeticUses||0;unlocked=new Set(f.unlocked||[]);achievementsDiv.innerHTML='';unlocked.forEach(n=>{const d=document.createElement('div');d.textContent=n;achievementsDiv.appendChild(d);});update();renderShop();renderCosmetics();};fr.readAsText(e.target.files[0]);};
+      godBtn.onclick=()=>{const newCount=parseInt(prompt('God Mode: set coins',count));const newClick=parseInt(prompt('God Mode: set click value',clickValue));if(!isNaN(newCount))count=newCount;if(!isNaN(newClick))clickValue=newClick;usedGod=true;update();alert('God Mode applied');};
+      document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();clickBtn.click();}});
+      setInterval(()=>{const elapsed=Date.now()-startTime;const h=('0'+Math.floor(elapsed/3600000)).slice(-2);const m=('0'+Math.floor((elapsed%3600000)/60000)).slice(-2);const s=('0'+Math.floor((elapsed%60000)/1000)).slice(-2);timerEl.textContent=`Time playing: ${h}:${m}:${s}`;},1000);
+      renderShop();renderCosmetics();update();
     });
   </script>
 </body>
